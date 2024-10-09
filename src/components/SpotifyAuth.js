@@ -1,0 +1,67 @@
+import axios from 'axios';
+
+// Spotify credentials
+const clientId = '400874ab2dc449858480863ad522609f';
+const clientSecret = 'c82905546d364f6ea992749fda02f2fb';
+const redirectUri = 'http://localhost:3000/callback';  // Must match your Spotify app's redirect URI
+
+// Step 1: Redirect user to Spotify login
+export const loginWithSpotify = () => {
+  const scopes = [
+    'playlist-modify-public',
+    'playlist-modify-private',
+    'user-read-private',
+  ];
+
+  // Wrap the URL in backticks for template literals
+  const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes.join(' '))}&show_dialog=true`;
+
+  window.location = authUrl;
+};
+
+// Step 2: Exchange authorization code for access token
+export const getAccessToken = async (code) => {
+  const authOptions = {
+    headers: {
+      Authorization: 'Basic ' + btoa(clientId + ':' + clientSecret),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  };
+
+  const body = new URLSearchParams({
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: redirectUri,
+  });
+
+  try {
+    const response = await axios.post('https://accounts.spotify.com/api/token', body, authOptions);
+    return response.data;  // Contains accessToken, refreshToken, etc.
+  } catch (error) {
+    console.error('Error getting access token', error);
+    throw error;
+  }
+};
+
+// Step 3: Refresh token (if needed)
+export const refreshToken = async (refreshToken) => {
+  const authOptions = {
+    headers: {
+      Authorization: 'Basic ' + btoa(clientId + ':' + clientSecret),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  };
+
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+  });
+
+  try {
+    const response = await axios.post('https://accounts.spotify.com/api/token', body, authOptions);
+    return response.data.access_token;
+  } catch (error) {
+    console.error('Error refreshing access token', error);
+    throw error;
+  }
+};
