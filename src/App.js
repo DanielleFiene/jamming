@@ -6,31 +6,10 @@ import Playlist from './components/Playlist';
 import { Container, Button, Grid, Typography, Box } from '@mui/material';
 import { loginWithSpotify, getAccessToken } from './components/SpotifyAuth';
 import axios from 'axios';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+import { ThemeProvider } from '@mui/material/styles';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import theme from './styles/StyleOverrides.js';
 import './styles/style.css';
-
-// Different font-style
-const theme = createTheme({
-  palette: {
-    text: {
-      primary: '#ffffff', // Set primary text color to white
-      secondary: '#cccccc', // Optional: Set secondary text color
-    },
-    primary: {
-      main: '#ffffff', // Set the primary color to white
-    },
-  },
-  typography: {
-    fontFamily: 'Montserrat, sans-serif',
-    fontWeightBold: 700, // Set bold font weight
-    // Set bold for specific variants if needed
-    h4: {
-      fontWeight: 700, // Make h4 bold
-    },
-    // Optionally, you can define other typography variants here
-  },
-});
 
 const App = () => {
   const [searchResults, setSearchResults] = useState([]);
@@ -146,7 +125,6 @@ const Home = ({
       }}
     >
       <Typography variant="h4" align="center" >
-      <EmojiEmotionsIcon style={{ verticalAlign: 'middle', fontSize: '50px', color: '#ffffff'}} />
     </Typography>
       <Grid container 
         spacing={2} 
@@ -158,10 +136,21 @@ const Home = ({
       >
         {!accessToken ? (
           <Grid item>
-            <Button variant="contained" onClick={handleLogin}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Button
+              variant="contained"
+              onClick={handleLogin}
+              sx={{
+                marginTop: '20%',
+              }}
+            >
               Log in with Spotify
             </Button>
-          </Grid>
+            <PlayCircleIcon
+              style={{ marginTop: '90%', fontSize: '20em', color: '#000000' }}
+            />
+          </div>
+        </Grid>
         ) : (
           <Grid container spacing={0} item xs={12}>
             {/* Wrap the grid items in a Box for separate positioning */}

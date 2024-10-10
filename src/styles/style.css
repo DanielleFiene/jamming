@@ -1,8 +1,7 @@
 * {
     box-sizing: border-box;
+    line-height: 180%;
+    color: #ffffff;
+    letter-spacing: 0.05em;
 }
-
-body {
-    font-family: 'Montserrat', sans-serif;
-  }
-  
+ 

@@ -14,13 +14,16 @@ const Track = ({ track, onAdd }) => {
         )}
       </ListItemAvatar>
       <ListItemText
-        primary={track.name} // Track name
+        primary={track.name} // Track name title of the song
         secondary={
           <>
             <div>Artist: {track.artists.map(artist => artist.name).join(', ')}</div>
             <div>Album: {track.album.name}</div> {/* Album name */}
           </>
         }
+        primaryTypographyProps={{
+          style: { fontWeight: 600 }, // Target song title font weight finally found it!
+        }}
       />
       <Grid container justifyContent="flex-end">
         <IconButton 

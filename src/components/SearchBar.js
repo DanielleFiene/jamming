@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TextField, Button, Box, Grid } from '@mui/material';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
 
 const SearchBar = ({ setSearchResults, accessToken }) => {
@@ -57,7 +59,7 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
       <Grid item>
         <TextField
           label="Search Spotify"
-          variant="outlined"
+          variant="filled"
           value={query}
           onChange={(e) => setQuery(e.target.value)} // Livesearch
           onKeyDown={handleKeyDown}  // so we can hit the enter as well instead of just button click
@@ -65,6 +67,16 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
             marginBottom: 2, // Spacing below the text field
             width: '100%', // Adjust this to control the width of the TextField
             maxWidth: '400px', // Max width for the TextField
+            '& .MuiInputBase-input': {
+            fontWeight: '600', // Set font weight of the input text
+      },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon/>
+              </InputAdornment>
+            ),
           }}
         />
       </Grid>
