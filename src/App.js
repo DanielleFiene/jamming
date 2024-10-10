@@ -3,12 +3,13 @@ import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from
 import SearchBar from './components/SearchBar';
 import SearchResults from './components/SearchResults';
 import Playlist from './components/Playlist';
-import { Container, Button, Grid, Typography, Box } from '@mui/material';
+import Header from './components/Header';  // Import the Header component
+import { Container, Grid, Box, Button } from '@mui/material';
 import { loginWithSpotify, getAccessToken } from './components/SpotifyAuth';
 import axios from 'axios';
 import { ThemeProvider } from '@mui/material/styles';
+import { theme, GlobalScrollbarStyles } from './styles/StyleOverrides.js'; // Import the GlobalScrollbarStyles
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
-import theme from './styles/StyleOverrides.js';
 import './styles/style.css';
 
 const App = () => {
@@ -19,6 +20,14 @@ const App = () => {
   // Function to log in with Spotify
   const handleLogin = () => {
     loginWithSpotify();  // Redirects user to Spotify login
+  };
+
+  // Function to log out
+  const handleLogout = () => {
+    setAccessToken('');  // Clear the access token
+    localStorage.removeItem('spotifyAccessToken');  // Remove token from local storage
+    setSearchResults([]);  // Clear search results
+    setPlaylist([]);  // Clear the playlist
   };
 
   // Function to save the playlist to Spotify
@@ -59,9 +68,8 @@ const App = () => {
           },
         }
       );
-      
-      alert('Playlist saved to Spotify successfully!');
 
+      alert('Playlist saved to Spotify successfully!');
     } catch (error) {
       console.error('Error saving playlist to Spotify:', error);
       alert('Failed to save the playlist to Spotify.');
@@ -80,26 +88,36 @@ const App = () => {
   };
 
   return (
-    <ThemeProvider theme={theme}> {/* Wrap the Router in ThemeProvider */}
-      <Router>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Home
-                accessToken={accessToken}
-                handleLogin={handleLogin}
-                searchResults={searchResults}
-                setSearchResults={setSearchResults}
-                playlist={playlist}
-                setPlaylist={setPlaylist}
-                handleSavePlaylist={handleSavePlaylist}
-              />
-            }
-          />
-          <Route path="/callback" element={<Callback setAccessToken={setAccessToken} />} />
-        </Routes>
-      </Router>
+    <ThemeProvider theme={theme}>
+      <GlobalScrollbarStyles /> {/* Include the GlobalScrollbarStyles here */}
+      <Box 
+        sx={{ 
+          minHeight: '100vh', 
+          background: 'linear-gradient(to right, #bbd2c5, #536976, #292e49)',
+        }}
+      >
+        <Router>
+          <Header handleLogout={handleLogout} /> {/* Added Header here */}
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Home
+                  accessToken={accessToken}
+                  handleLogin={handleLogin}
+                  searchResults={searchResults}
+                  setSearchResults={setSearchResults}
+                  playlist={playlist}
+                  setPlaylist={setPlaylist}
+                  handleSavePlaylist={handleSavePlaylist}
+                  handleLogout={handleLogout}  // Pass handleLogout to Home
+                />
+              }
+            />
+            <Route path="/callback" element={<Callback setAccessToken={setAccessToken} />} />
+          </Routes>
+        </Router>
+      </Box>
     </ThemeProvider>
   );
 };
@@ -112,79 +130,98 @@ const Home = ({
   playlist,
   setPlaylist,
   handleSavePlaylist,
+  handleLogout, // Receive handleLogout as a prop
 }) => {
   return (
     <Container 
       sx={{
-        background: 'linear-gradient(to right, #1d4350, #a43931)',
-        boxShadow: '0 8px 24px rgba(0, 0, 255, 0.8)',
-        marginTop: '2%',
+        background: 'linear-gradient(to right, #536976, #292e49)',
+        boxShadow: '0px 0px 40px 20px rgba(0, 0, 0, 0.7)',
+        marginTop: '1%',
         paddingTop: '2%',
-        maxHeight: '90vh',
+        maxHeight: '100vh',
         borderRadius: '15%',
       }}
     >
-      <Typography variant="h4" align="center" >
-    </Typography>
       <Grid container 
         spacing={2} 
         sx={{ 
-          height: '90vh',
+          height: '85vh',
           justifyContent: 'center',
           alignItems: 'flex-start',
         }}
       >
         {!accessToken ? (
           <Grid item>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Button
-              variant="contained"
-              onClick={handleLogin}
-              sx={{
-                marginTop: '20%',
-              }}
-            >
-              Log in with Spotify
-            </Button>
-            <PlayCircleIcon
-              style={{ marginTop: '90%', fontSize: '20em', color: '#000000' }}
-            />
-          </div>
-        </Grid>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Button
+                variant="outlined"
+                onClick={handleLogin}
+                sx={{
+                  marginTop: '20%',
+                }}
+              >
+                Log in with Spotify
+              </Button>
+              <PlayCircleIcon 
+                sx={{ 
+                  fontSize: '30em',
+                  marginTop: '45%', 
+                  color: 'primary',
+                  boxShadow: '0px 0px 40px 20px rgba(0, 0, 0, 0.7)',
+                  borderRadius: '4px',
+                }} 
+              />
+            </div>
+          </Grid>
         ) : (
           <Grid container spacing={0} item xs={12}>
-            {/* Wrap the grid items in a Box for separate positioning */}
-            <Box display="flex" justifyContent="space-between" 
-            sx={{ 
-              width: '100%',
-              marginTop: '2%',
-              }}>
+            <Box display="flex" justifyContent="space-between" sx={{ width: '100%', marginTop: '3%' }}>
               <Grid item xs={6} 
-              sx={{ 
-                border: '2px solid red',
-                paddingTop: '1%',
-                paddingLeft: '15px',
-                marginRight: '15px', 
-                maxHeight: '75vh',
-                overflowY: 'scroll',
-                }}>
+                sx={{ 
+                  paddingLeft: '15px',
+                  marginRight: '15px', 
+                  maxHeight: '75vh',
+                  overflowY: 'scroll',
+                  overflowX: 'hidden',
+                  paddingBottom: '2%',
+                }}
+              >
                 <SearchBar setSearchResults={setSearchResults} accessToken={accessToken} />
                 <SearchResults searchResults={searchResults} playlist={playlist} setPlaylist={setPlaylist} />
               </Grid>
               <Grid item xs={6} 
-              sx={{ 
-                border: '2px solid blue', 
-                paddingTop: '1%',
-                paddingLeft: '15px',
-                marginLeft: '15px',
-                maxHeight: '75vh',
-                overflowY: 'scroll',
-                }}>
-                
+                sx={{
+                  paddingLeft: '15px',
+                  marginLeft: '15px',
+                  maxHeight: '75vh',
+                  overflowY: 'scroll',
+                  overflowX: 'hidden',
+                  paddingBottom: '2%',
+                }}
+              >
                 <Playlist playlist={playlist} setPlaylist={setPlaylist} />
               </Grid>
             </Box>
           </Grid>
+        )}
+
+        {accessToken && ( // Only show logout button if accessToken exists
+          <Box 
+            sx={{ 
+              display: 'flex',         
+              justifyContent: 'center', // Center the button horizontally
+              marginTop: '10px', 
+              marginBottom: '10px',
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </Box>
         )}
       </Grid>
     </Container>

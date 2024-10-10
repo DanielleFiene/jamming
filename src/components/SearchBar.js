@@ -22,7 +22,7 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
         params: {
           q: query,
           type: 'track',
-          limit: 20, // limit the number of results returned
+          limit: 40, // limit the number of results returned
         },
       });
 
@@ -68,7 +68,7 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
             width: '100%', // Adjust this to control the width of the TextField
             maxWidth: '400px', // Max width for the TextField
             '& .MuiInputBase-input': {
-            fontWeight: '600', // Set font weight of the input text
+            fontWeight: '800', // Input text
       },
           }}
           InputProps={{
@@ -77,12 +77,13 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
                 <SearchIcon/>
               </InputAdornment>
             ),
+            autoComplete: 'off',
           }}
         />
       </Grid>
       <Grid item>
         <Button 
-          variant="contained" 
+          variant="outlined" 
           onClick={handleSearch}
           sx={{ 
             width: '100%', // Adjust this to control the width of the Button
