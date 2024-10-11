@@ -6,7 +6,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 
-const Playlist = ({ playlist, setPlaylist, accessToken }) => {
+const Playlist = ({ playlist, setPlaylist, accessToken, handleSavePlaylist }) => {  // Add handleSavePlaylist
   const [player, setPlayer] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(null);
@@ -237,6 +237,17 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
       </Tooltip>
     </Box>
 
+      {/* Save Playlist Button */}
+      <Box sx={{ marginTop: '20px' }}>
+        <Button 
+          variant="contained" 
+          color="secondary" 
+          onClick={handleSavePlaylist}
+          disabled={playlist.length === 0}
+        >
+          Save Playlist to Spotify
+        </Button>
+      </Box>
 
       {/* Conditional rendering for Clear Playlist button */}
       {playlist.length > 0 && (
