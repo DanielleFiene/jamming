@@ -186,20 +186,60 @@ const Home = ({
         boxShadow: '0px 0px 40px 20px rgba(0, 0, 0, 0.7)',
         marginTop: '1%',
         paddingTop: '2%',
-        maxHeight: '100vh',
+        maxHeight: '100%',
         borderRadius: '15%',
-        overflow: 'hidden', // Prevent overflow
+        height: {
+          xs: '90vh',   
+          sm: '90vh',   
+          md: '90vh',
+          lg: '90vh',
+          xl: '85vh',
+        },
+        width: {
+          xs: '90%',   
+          sm: '90%',   
+          md: '90%', 
+        },
+        borderRadius: {
+          xs: '8px',
+          sm: '40px',
+          md: '15%',
+        },
       }}
     >
       <Grid
-        container
-        spacing={2}
-        sx={{
-          height: '85vh',
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-        }}
-      >
+  container
+  spacing={{
+    xs: 1, 
+    sm: 2,  
+    md: 3, 
+  }}
+  sx={{
+    height: {
+      xs: '80vh',  
+      sm: '75vh',   
+      md: '85vh',  
+    },
+    width: {
+      xs: '100%', 
+      sm: '100%',  
+      md: '100%',  
+    },
+    marginTop: {
+      xs: '50px',  
+      sm: '20px',  
+      md: '20px',
+      lg: '20px',
+      xl: '-60px',
+    },
+    justifyContent: {
+      xs: 'flex-start', 
+      sm: 'center',    
+    },
+    alignItems: 'flex-start',
+  }}
+>
+
         {!accessToken ? (
           <Grid item xs={12} sm={6}>
             <Box display="flex" flexDirection="column" alignItems="center" sx={{ marginTop: '20%' }}>
@@ -209,7 +249,7 @@ const Home = ({
               <PlayCircleIcon
                 sx={{
                   fontSize: { xs: '10em', sm: '15em', md: '30em' },
-                  marginTop: { xs: '20%', sm: '45%' },
+                  marginTop: { xs: '20%', sm: '45%', lg: '25%' },
                   color: 'primary.main',
                   boxShadow: '0px 0px 40px 20px rgba(0, 0, 0, 0.7)',
                   borderRadius: '4px',
@@ -258,7 +298,7 @@ const Home = ({
               marginBottom: '10px',
             }}
           >
-            <Button variant="outlined" onClick={handleLogout}>
+            <Button variant="outlined" onClick={handleLogout} sx={{padding: { xs: '8px', sm: '16px' },}}>
               Logout
             </Button>
           </Box>

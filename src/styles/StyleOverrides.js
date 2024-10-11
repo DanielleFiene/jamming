@@ -8,7 +8,7 @@ const theme = createTheme({
       secondary: '#ffffff',
     },
     primary: {
-      main: '#1DB954', // Spotify green for the primary color, this color will override MUI textfield components border color on active
+      main: '#1DB954',
     },
   },
   typography: {
@@ -18,7 +18,7 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         contained: {
-          background: 'linear-gradient(120deg, #1DB954, #191414)', // Spotify gradient color
+          background: 'linear-gradient(120deg, #1DB954, #191414)',
           color: '#ffffff',
           fontWeight: '600',
           borderRadius: '20px',
@@ -32,7 +32,7 @@ const theme = createTheme({
           },
           '&.Mui-disabled': {
             background: 'linear-gradient(120deg, #1DB954, #191414)',
-            opacity: 0.5, // Optionally make it semi-transparent
+            opacity: 0.5,
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
             pointerEvents: 'none',
           },
@@ -54,10 +54,10 @@ const theme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
-          color: '#1DB954', // Default Spotify green icon color
+          color: '#1DB954',
           transition: 'background-color 0.3s ease',
           '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.4)', // Stronger hover effect
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
           },
         },
       },
@@ -69,30 +69,45 @@ const theme = createTheme({
 const GlobalScrollbarStyles = () => (
   <GlobalStyles styles={{
     '::-webkit-scrollbar': {
-      width: '12px', // Width of the scrollbar
-      backgroundColor: 'transparent', // Set transparent background to remove default styling
+      width: '12px',
+      backgroundColor: 'transparent',
     },
     '::-webkit-scrollbar-track': {
-      background: 'transparent', // Transparent background for the track
-      borderRadius: '8px', // Rounded corners for the track
+      background: 'transparent',
+      borderRadius: '8px',
     },
     '::-webkit-scrollbar-thumb': {
-      background: '#BBD2C5', 
-      borderRadius: '8px', // Rounded corners for the thumb
+      background: '#BBD2C5',
+      borderRadius: '8px',
     },
     '::-webkit-scrollbar-button': {
-      display: 'none', // Hide the up and down arrows
+      display: 'none',
     },
     '::-webkit-scrollbar-thumb:hover': {
-      opacity: '0.8', // Slightly fade the thumb on hover
+      opacity: '0.8',
     },
     // Specifically target the scrollable areas
     '.MuiGrid-root::-webkit-scrollbar': {
       width: '12px',
     },
     '.MuiGrid-root::-webkit-scrollbar-thumb': {
-      backgroundImage: 'linear-gradient(to bottom, #ffe259, #ffa751)', // Gradient color for the thumb
-      borderRadius: '8px', // Rounded corners for the thumb
+      backgroundImage: 'linear-gradient(to bottom, #ffe259, #ffa751)',
+      borderRadius: '8px',
+    },
+    // Media query for small screens
+    '@media (max-width:600px)': {
+      '::-webkit-scrollbar': {
+        width: '4px', // Set scrollbar width to 4px for small screens
+      },
+      '.MuiGrid-root::-webkit-scrollbar': {
+        width: '4px',
+      },
+      '::-webkit-scrollbar-thumb': {
+        background: '#BBD2C5', // Optionally adjust thumb color for small screens
+      },
+      '.MuiGrid-root::-webkit-scrollbar-thumb': {
+        backgroundImage: 'linear-gradient(to bottom, #ffe259, #ffa751)', // Keep the gradient for thumb
+      },
     },
   }} />
 );

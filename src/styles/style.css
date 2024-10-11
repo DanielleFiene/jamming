@@ -4,4 +4,8 @@
     color: #ffffff;
     letter-spacing: 0.05em;
 }
+
+html {
+    overflow: hidden;
+}
  

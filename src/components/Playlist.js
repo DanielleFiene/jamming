@@ -207,7 +207,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
       flexDirection="column" 
       alignItems="center" 
       justifyContent="center" 
-      sx={{ textAlign: 'center' }} 
+      sx={{ textAlign: 'center', padding: { xs: '8px', sm: '16px' }, }} 
     >
       {isEditing ? (
         <TextField
@@ -275,7 +275,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
             color="primary" 
             onClick={playAllTracks}
             disabled={isDisabled} // Disable if playlist is empty
-            sx={{ marginX: '5px' }}
+            sx={{ marginX: '5px', padding: { xs: '5px', sm: '16px' }, }}
           >
             <PlayArrowIcon />
           </Button>
@@ -286,7 +286,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
             color="primary" 
             onClick={shuffleAndPlay}
             disabled={isDisabled} // Disable if playlist is empty
-            sx={{ marginX: '5px' }}
+            sx={{ marginX: '5px', padding: { xs: '5px', sm: '16px' }, }}
           >
             <ShuffleIcon />
           </Button>
@@ -297,7 +297,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
             color="primary" 
             onClick={previousTrack} 
             disabled={isDisabled || currentTrackIndex === 0}
-            sx={{ marginX: '5px' }}
+            sx={{ marginX: '5px',padding: { xs: '5px', sm: '16px' }, }}
           >
             <SkipPreviousIcon /> 
           </Button>
@@ -308,7 +308,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
             color="primary" 
             onClick={nextTrack} 
             disabled={isDisabled || currentTrackIndex >= playlist.length - 1}
-            sx={{ marginX: '5px' }}
+            sx={{ marginX: '5px', padding: { xs: '5px', sm: '16px' }, }}
           >
             <SkipNextIcon />
           </Button>
@@ -321,7 +321,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
           variant="contained" 
           color="secondary" 
           onClick={handleSavePlaylist}
-          disabled={playlist.length === 0}
+          disabled={playlist.length === 0} sx={{padding: { xs: '5px', sm: '16px' },}}
         >
           Save Playlist to Spotify
         </Button>
@@ -337,6 +337,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
             sx={{ 
               marginTop: '20px',
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.8)',
+              padding: { xs: '5px', sm: '16px' },
               transition: 'ease-in, 0.3s',
               '&:hover': {
                 scale: '1.05',

@@ -67,6 +67,7 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
             marginBottom: 2, // Spacing below the text field
             width: '100%', // Adjust this to control the width of the TextField
             maxWidth: '400px', // Max width for the TextField
+            padding: { xs: '8px', sm: '16px' },
             '& .MuiInputBase-input': {
             fontWeight: '800', // Input text
       },
@@ -86,8 +87,9 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
           variant="outlined" 
           onClick={handleSearch}
           sx={{ 
-            width: '100%', // Adjust this to control the width of the Button
-            maxWidth: '400px', // Max width for the Button
+            width: '100%',
+            maxWidth: '400px',
+            padding: { xs: '8px', sm: '16px' },
           }}
         >
           Search
