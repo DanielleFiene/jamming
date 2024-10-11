@@ -65,3 +65,43 @@ export const refreshToken = async (refreshToken) => {
     throw error;
   }
 };
+
+// New Function: Create a Playlist
+export const createPlaylist = async (userId, playlistName, accessToken) => {
+  try {
+    const response = await axios.post(
+      `https://api.spotify.com/v1/users/${userId}/playlists`,
+      {
+        name: playlistName,
+        description: 'My playlist description', // Optional
+        public: false, // Set to true if you want it public
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    return response.data; // Returns the created playlist data
+  } catch (error) {
+    console.error('Error creating playlist:', error);
+    throw error; // Handle error appropriately
+  }
+};
+
+// Function to get User Profile
+export const getUserProfile = async (accessToken) => {
+  try {
+    const response = await axios.get('https://api.spotify.com/v1/me', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data.id; // Return user ID
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    throw error; // Handle error appropriately
+  }
+};

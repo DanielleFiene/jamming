@@ -1,14 +1,15 @@
+// App.js
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import SearchBar from './components/SearchBar';
 import SearchResults from './components/SearchResults';
 import Playlist from './components/Playlist';
-import Header from './components/Header';  // Import the Header component
+import Header from './components/Header';
 import { Container, Grid, Box, Button } from '@mui/material';
-import { loginWithSpotify, getAccessToken } from './components/SpotifyAuth';
+import { loginWithSpotify, getAccessToken, refreshToken } from './components/SpotifyAuth';
 import axios from 'axios';
 import { ThemeProvider } from '@mui/material/styles';
-import { theme, GlobalScrollbarStyles } from './styles/StyleOverrides.js'; // Import the GlobalScrollbarStyles
+import { theme, GlobalScrollbarStyles } from './styles/StyleOverrides.js';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import './styles/style.css';
 
@@ -16,6 +17,9 @@ const App = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [playlist, setPlaylist] = useState([]);
   const [accessToken, setAccessToken] = useState('');
+  const [refreshToken, setRefreshToken] = useState('');
+
+  const navigate = useNavigate();
 
   // Function to log in with Spotify
   const handleLogin = () => {
@@ -25,26 +29,44 @@ const App = () => {
   // Function to log out
   const handleLogout = () => {
     setAccessToken('');  // Clear the access token
-    localStorage.removeItem('spotifyAccessToken');  // Remove token from local storage
+    localStorage.removeItem('spotifyAccessToken');
+    localStorage.removeItem('spotifyRefreshToken');
     setSearchResults([]);  // Clear search results
     setPlaylist([]);  // Clear the playlist
+    navigate('/');
+  };
+
+  // Function to refresh access token using refresh token
+  const refreshAccessToken = async () => {
+    try {
+      const newAccessToken = await refreshToken(refreshToken);
+      setAccessToken(newAccessToken);
+      localStorage.setItem('spotifyAccessToken', newAccessToken);
+    } catch (error) {
+      console.error('Error refreshing access token:', error);
+      handleLogout();
+    }
   };
 
   // Function to save the playlist to Spotify
   const saveToSpotify = async (playlistName, trackUris) => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      alert('You need to log in to save playlists to Spotify.');
+      return;
+    }
 
     try {
       // Get user ID
-      const userId = await axios.get('https://api.spotify.com/v1/me', {
+      const userIdResponse = await axios.get('https://api.spotify.com/v1/me', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
+      const userId = userIdResponse.data.id;
 
       // Create playlist
       const createPlaylistResponse = await axios.post(
-        `https://api.spotify.com/v1/users/${userId.data.id}/playlists`,
+        `https://api.spotify.com/v1/users/${userId}/playlists`,
         {
           name: playlistName,
           public: false,
@@ -72,51 +94,76 @@ const App = () => {
       alert('Playlist saved to Spotify successfully!');
     } catch (error) {
       console.error('Error saving playlist to Spotify:', error);
-      alert('Failed to save the playlist to Spotify.');
+      if (error.response && error.response.status === 401) {
+        // If the token expired, refresh it
+        await refreshAccessToken();
+        saveToSpotify(playlistName, trackUris);  // Retry saving
+      } else {
+        alert('Failed to save the playlist to Spotify.');
+      }
     }
   };
 
   // Function to handle saving playlist when user clicks the button
   const handleSavePlaylist = () => {
     if (playlist.length === 0) {
-      alert("Add some tracks to your playlist first!");
+      alert('Add some tracks to your playlist first!');
       return;
     }
 
-    const trackUris = playlist.map(track => track.uri); // Extract URIs from tracks
+    const trackUris = playlist.map(track => track.uri);
     saveToSpotify('My Custom Playlist', trackUris);
   };
 
+  // Function to retrieve token from localStorage and refresh if needed
+  useEffect(() => {
+    const storedAccessToken = localStorage.getItem('spotifyAccessToken');
+    const storedRefreshToken = localStorage.getItem('spotifyRefreshToken');
+
+    if (storedAccessToken) {
+      setAccessToken(storedAccessToken);
+    }
+
+    if (storedRefreshToken) {
+      setRefreshToken(storedRefreshToken);
+    }
+
+    if (!storedAccessToken && !window.location.pathname.includes('callback')) {
+      handleLogin();
+    }
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
-      <GlobalScrollbarStyles /> {/* Include the GlobalScrollbarStyles here */}
-      <Box 
-        sx={{ 
-          minHeight: '100vh', 
+      <GlobalScrollbarStyles />
+      <Box
+        sx={{
+          minHeight: '100vh',
           background: 'linear-gradient(to right, #bbd2c5, #536976, #292e49)',
         }}
       >
-        <Router>
-          <Header handleLogout={handleLogout} /> {/* Added Header here */}
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Home
-                  accessToken={accessToken}
-                  handleLogin={handleLogin}
-                  searchResults={searchResults}
-                  setSearchResults={setSearchResults}
-                  playlist={playlist}
-                  setPlaylist={setPlaylist}
-                  handleSavePlaylist={handleSavePlaylist}
-                  handleLogout={handleLogout}  // Pass handleLogout to Home
-                />
-              }
-            />
-            <Route path="/callback" element={<Callback setAccessToken={setAccessToken} />} />
-          </Routes>
-        </Router>
+        <Header handleLogout={handleLogout} />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Home
+                accessToken={accessToken}
+                handleLogin={handleLogin}
+                searchResults={searchResults}
+                setSearchResults={setSearchResults}
+                playlist={playlist}
+                setPlaylist={setPlaylist}
+                handleSavePlaylist={handleSavePlaylist}
+                handleLogout={handleLogout}
+              />
+            }
+          />
+          <Route
+            path="/callback"
+            element={<AuthCallback setAccessToken={setAccessToken} setRefreshToken={setRefreshToken} />}
+          />
+        </Routes>
       </Box>
     </ThemeProvider>
   );
@@ -130,10 +177,10 @@ const Home = ({
   playlist,
   setPlaylist,
   handleSavePlaylist,
-  handleLogout, // Receive handleLogout as a prop
+  handleLogout,
 }) => {
   return (
-    <Container 
+    <Container
       sx={{
         background: 'linear-gradient(to right, #536976, #292e49)',
         boxShadow: '0px 0px 40px 20px rgba(0, 0, 0, 0.7)',
@@ -143,9 +190,10 @@ const Home = ({
         borderRadius: '15%',
       }}
     >
-      <Grid container 
-        spacing={2} 
-        sx={{ 
+      <Grid
+        container
+        spacing={2}
+        sx={{
           height: '85vh',
           justifyContent: 'center',
           alignItems: 'flex-start',
@@ -154,33 +202,29 @@ const Home = ({
         {!accessToken ? (
           <Grid item>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Button
-                variant="outlined"
-                onClick={handleLogin}
-                sx={{
-                  marginTop: '20%',
-                }}
-              >
+              <Button variant="outlined" onClick={handleLogin} sx={{ marginTop: '20%' }}>
                 Log in with Spotify
               </Button>
-              <PlayCircleIcon 
-                sx={{ 
+              <PlayCircleIcon
+                sx={{
                   fontSize: '30em',
-                  marginTop: '45%', 
+                  marginTop: '45%',
                   color: 'primary',
                   boxShadow: '0px 0px 40px 20px rgba(0, 0, 0, 0.7)',
                   borderRadius: '4px',
-                }} 
+                }}
               />
             </div>
           </Grid>
         ) : (
           <Grid container spacing={0} item xs={12}>
             <Box display="flex" justifyContent="space-between" sx={{ width: '100%', marginTop: '3%' }}>
-              <Grid item xs={6} 
-                sx={{ 
+              <Grid
+                item
+                xs={6}
+                sx={{
                   paddingLeft: '15px',
-                  marginRight: '15px', 
+                  marginRight: '15px',
                   maxHeight: '75vh',
                   overflowY: 'scroll',
                   overflowX: 'hidden',
@@ -190,7 +234,9 @@ const Home = ({
                 <SearchBar setSearchResults={setSearchResults} accessToken={accessToken} />
                 <SearchResults searchResults={searchResults} playlist={playlist} setPlaylist={setPlaylist} />
               </Grid>
-              <Grid item xs={6} 
+              <Grid
+                item
+                xs={6}
                 sx={{
                   paddingLeft: '15px',
                   marginLeft: '15px',
@@ -200,25 +246,22 @@ const Home = ({
                   paddingBottom: '2%',
                 }}
               >
-                <Playlist playlist={playlist} setPlaylist={setPlaylist} />
+                <Playlist playlist={playlist} setPlaylist={setPlaylist} accessToken={accessToken} />
               </Grid>
             </Box>
           </Grid>
         )}
 
-        {accessToken && ( // Only show logout button if accessToken exists
-          <Box 
-            sx={{ 
-              display: 'flex',         
-              justifyContent: 'center', // Center the button horizontally
-              marginTop: '10px', 
+        {accessToken && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: '10px',
               marginBottom: '10px',
             }}
           >
-            <Button
-              variant="outlined"
-              onClick={handleLogout}
-            >
+            <Button variant="outlined" onClick={handleLogout}>
               Logout
             </Button>
           </Box>
@@ -228,10 +271,9 @@ const Home = ({
   );
 };
 
-// Callback Component to handle the Spotify redirect
-const Callback = ({ setAccessToken }) => {
-  const navigate = useNavigate();
+const AuthCallback = ({ setAccessToken, setRefreshToken }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const query = new URLSearchParams(location.search);
@@ -241,14 +283,16 @@ const Callback = ({ setAccessToken }) => {
       getAccessToken(code)
         .then((data) => {
           setAccessToken(data.access_token);
+          setRefreshToken(data.refresh_token);
           localStorage.setItem('spotifyAccessToken', data.access_token);
-          navigate('/');  // Redirect back to home after successful login
+          localStorage.setItem('spotifyRefreshToken', data.refresh_token);
+          navigate('/');
         })
         .catch((error) => {
           console.error('Error during authentication', error);
         });
     }
-  }, [location, navigate, setAccessToken]);
+  }, [location, navigate, setAccessToken, setRefreshToken]);
 
   return <h2>Loading...</h2>;
 };

@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import Tracklist from './Tracklist'; 
-import { Button, List, Box, Typography, TextField, Tooltip } from '@mui/material';
+import { Button, List, Box, Typography, TextField, Tooltip, Snackbar } from '@mui/material'; // Added Snackbar import
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
+import { createPlaylist, getUserProfile } from './SpotifyAuth'; // Import your functions
+import axios from 'axios'; // Ensure axios is imported for API calls
 
-const Playlist = ({ playlist, setPlaylist, accessToken, handleSavePlaylist }) => {  // Add handleSavePlaylist
+const Playlist = ({ playlist, setPlaylist, accessToken }) => {
   const [player, setPlayer] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(null);
   const [playlistName, setPlaylistName] = useState('Your Playlist');
   const [isEditing, setIsEditing] = useState(false);
+  
+  // New state variables for Snackbar
+  const [successMessage, setSuccessMessage] = useState(''); // For the success message
+  const [snackbarOpen, setSnackbarOpen] = useState(false); // For Snackbar visibility
 
   // Function to initialize the Spotify Player
   const initPlayer = () => {
@@ -124,6 +130,77 @@ const Playlist = ({ playlist, setPlaylist, accessToken, handleSavePlaylist }) =>
 
   const isDisabled = playlist.length <= 1;
 
+  // Updated function to save the playlist
+  const handleSavePlaylist = async () => {
+    if (!accessToken) {
+      console.error('No access token found.');
+      return;
+    }
+
+    if (playlist.length === 0) {
+      console.error("Can't save an empty playlist.");
+      return;
+    }
+
+    // Extract URIs from the playlist
+    const playlistTracks = playlist.map(track => track.uri).filter(uri => uri);
+
+    if (playlistTracks.length === 0) {
+      console.error('No valid tracks to save to the playlist.');
+      return;
+    }
+
+    const requestBody = {
+      name: playlistName,
+      public: true, // or false based on your preference
+      description: 'My playlist created with Spotify API',
+    };
+
+    try {
+      // Get the user ID
+      const userId = await getUserProfile(accessToken);
+
+      // Create the playlist
+      const createPlaylistResponse = await axios.post(
+        `https://api.spotify.com/v1/users/${userId}/playlists`,
+        requestBody,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const playlistId = createPlaylistResponse.data.id;
+
+      // Add tracks to the newly created playlist
+      await axios.post(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        { uris: playlistTracks },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Playlist saved successfully');
+      
+      // Set success message and open Snackbar
+      setSuccessMessage('Playlist saved successfully!'); 
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error saving playlist:', error);
+    }
+  };
+
+  // Function to handle Snackbar close
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   return (
     <Box 
       display="flex" 
@@ -144,6 +221,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken, handleSavePlaylist }) =>
               toggleEditMode();
             }
           }}
+          autoComplete="off"
           sx={{ marginBottom: '15px' }}
         />
       ) : (
@@ -190,52 +268,52 @@ const Playlist = ({ playlist, setPlaylist, accessToken, handleSavePlaylist }) =>
       </List>
       
       {/* Playback Controls */}
-    <Box sx={{ marginTop: '15px' }}>
-      <Tooltip title="Play All Songs">
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={playAllTracks}
-          disabled={isDisabled} // Disable if playlist is empty
-          sx={{ marginX: '5px' }}
-        >
-          <PlayArrowIcon />
-        </Button>
-      </Tooltip>
-      <Tooltip title="Shuffle and Play">
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={shuffleAndPlay}
-          disabled={isDisabled} // Disable if playlist is empty
-          sx={{ marginX: '5px' }}
-        >
-          <ShuffleIcon />
-        </Button>
-      </Tooltip>
-      <Tooltip title="Play Previous Track">
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={previousTrack} 
-          disabled={isDisabled || currentTrackIndex === 0}
-          sx={{ marginX: '5px' }}
-        >
-          <SkipPreviousIcon /> 
-        </Button>
-      </Tooltip>
-      <Tooltip title="Play Next Track">
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={nextTrack} 
-          disabled={isDisabled || currentTrackIndex >= playlist.length - 1}
-          sx={{ marginX: '5px' }}
-        >
-          <SkipNextIcon />
-        </Button>
-      </Tooltip>
-    </Box>
+      <Box sx={{ marginTop: '15px' }}>
+        <Tooltip title="Play All Songs">
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={playAllTracks}
+            disabled={isDisabled} // Disable if playlist is empty
+            sx={{ marginX: '5px' }}
+          >
+            <PlayArrowIcon />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Shuffle and Play">
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={shuffleAndPlay}
+            disabled={isDisabled} // Disable if playlist is empty
+            sx={{ marginX: '5px' }}
+          >
+            <ShuffleIcon />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Play Previous Track">
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={previousTrack} 
+            disabled={isDisabled || currentTrackIndex === 0}
+            sx={{ marginX: '5px' }}
+          >
+            <SkipPreviousIcon /> 
+          </Button>
+        </Tooltip>
+        <Tooltip title="Play Next Track">
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={nextTrack} 
+            disabled={isDisabled || currentTrackIndex >= playlist.length - 1}
+            sx={{ marginX: '5px' }}
+          >
+            <SkipNextIcon />
+          </Button>
+        </Tooltip>
+      </Box>
 
       {/* Save Playlist Button */}
       <Box sx={{ marginTop: '20px' }}>
@@ -270,6 +348,14 @@ const Playlist = ({ playlist, setPlaylist, accessToken, handleSavePlaylist }) =>
           </Button>
         </Tooltip>
       )}
+
+      {/* Snackbar for success message */}
+      <Snackbar 
+        open={snackbarOpen} 
+        autoHideDuration={3000} 
+        onClose={handleSnackbarClose}
+        message={successMessage}
+      />
     </Box>
   );
 };
