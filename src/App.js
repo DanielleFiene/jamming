@@ -23,16 +23,16 @@ const App = () => {
 
   // Function to log in with Spotify
   const handleLogin = () => {
-    loginWithSpotify();  // Redirects user to Spotify login
+    loginWithSpotify(); // Redirects user to Spotify login
   };
 
   // Function to log out
   const handleLogout = () => {
-    setAccessToken('');  // Clear the access token
+    setAccessToken(''); // Clear the access token
     localStorage.removeItem('spotifyAccessToken');
     localStorage.removeItem('spotifyRefreshToken');
-    setSearchResults([]);  // Clear search results
-    setPlaylist([]);  // Clear the playlist
+    setSearchResults([]); // Clear search results
+    setPlaylist([]); // Clear the playlist
     navigate('/');
   };
 
@@ -97,7 +97,7 @@ const App = () => {
       if (error.response && error.response.status === 401) {
         // If the token expired, refresh it
         await refreshAccessToken();
-        saveToSpotify(playlistName, trackUris);  // Retry saving
+        saveToSpotify(playlistName, trackUris); // Retry saving
       } else {
         alert('Failed to save the playlist to Spotify.');
       }
@@ -111,7 +111,7 @@ const App = () => {
       return;
     }
 
-    const trackUris = playlist.map(track => track.uri);
+    const trackUris = playlist.map((track) => track.uri);
     saveToSpotify('My Custom Playlist', trackUris);
   };
 
@@ -188,6 +188,7 @@ const Home = ({
         paddingTop: '2%',
         maxHeight: '100vh',
         borderRadius: '15%',
+        overflow: 'hidden', // Prevent overflow
       }}
     >
       <Grid
@@ -200,35 +201,33 @@ const Home = ({
         }}
       >
         {!accessToken ? (
-          <Grid item>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Button variant="outlined" onClick={handleLogin} sx={{ marginTop: '20%' }}>
+          <Grid item xs={12} sm={6}>
+            <Box display="flex" flexDirection="column" alignItems="center" sx={{ marginTop: '20%' }}>
+              <Button variant="outlined" onClick={handleLogin}>
                 Log in with Spotify
               </Button>
               <PlayCircleIcon
                 sx={{
-                  fontSize: '30em',
-                  marginTop: '45%',
-                  color: 'primary',
+                  fontSize: { xs: '10em', sm: '15em', md: '30em' },
+                  marginTop: { xs: '20%', sm: '45%' },
+                  color: 'primary.main',
                   boxShadow: '0px 0px 40px 20px rgba(0, 0, 0, 0.7)',
                   borderRadius: '4px',
                 }}
               />
-            </div>
+            </Box>
           </Grid>
         ) : (
-          <Grid container spacing={0} item xs={12}>
+          <Grid container spacing={2} item xs={12}>
             <Box display="flex" justifyContent="space-between" sx={{ width: '100%', marginTop: '3%' }}>
               <Grid
                 item
-                xs={6}
+                xs={12} sm={6}
                 sx={{
-                  paddingLeft: '15px',
-                  marginRight: '15px',
+                  padding: '0 15px',
                   maxHeight: '75vh',
                   overflowY: 'scroll',
                   overflowX: 'hidden',
-                  paddingBottom: '2%',
                 }}
               >
                 <SearchBar setSearchResults={setSearchResults} accessToken={accessToken} />
@@ -236,14 +235,12 @@ const Home = ({
               </Grid>
               <Grid
                 item
-                xs={6}
+                xs={12} sm={6}
                 sx={{
-                  paddingLeft: '15px',
-                  marginLeft: '15px',
+                  padding: '0 15px',
                   maxHeight: '75vh',
                   overflowY: 'scroll',
                   overflowX: 'hidden',
-                  paddingBottom: '2%',
                 }}
               >
                 <Playlist playlist={playlist} setPlaylist={setPlaylist} accessToken={accessToken} />
