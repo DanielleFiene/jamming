@@ -192,7 +192,7 @@ const Home = ({
           xs: '90vh',   
           sm: '90vh',   
           md: '90vh',
-          lg: '90vh',
+          lg: '85vh',
           xl: '85vh',
         },
         width: {
