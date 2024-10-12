@@ -36,7 +36,7 @@ const Header = () => {
           textAlign: 'center',
         }}
       >
-        JAMSPACE
+        JAMMING
       </Typography>
     </Box>
   );

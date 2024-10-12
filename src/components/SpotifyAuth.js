@@ -1,10 +1,9 @@
-// SpotifyAuth.js
 import axios from 'axios';
 
 // Spotify credentials
-const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
-const clientSecret = process.env.REACT_APP_SPOTIFY_CLIENT_SECRET;
-const redirectUri = process.env.REACT_APP_SPOTIFY_REDIRECT_URI || 'http://localhost:3000/callback';
+const clientId = '400874ab2dc449858480863ad522609f';
+const clientSecret = 'c82905546d364f6ea992749fda02f2fb';
+const redirectUri = 'http://localhost:3000/callback';  // Must match your Spotify app's redirect URI
 
 // Step 1: Redirect user to Spotify login
 export const loginWithSpotify = () => {
@@ -45,7 +44,7 @@ export const getAccessToken = async (code) => {
 };
 
 // Step 3: Refresh token (if needed)
-export const refreshToken = async (refreshTokenValue) => {
+export const refreshToken = async (refreshToken) => {
   const authOptions = {
     headers: {
       Authorization: 'Basic ' + btoa(clientId + ':' + clientSecret),
@@ -55,12 +54,12 @@ export const refreshToken = async (refreshTokenValue) => {
 
   const body = new URLSearchParams({
     grant_type: 'refresh_token',
-    refresh_token: refreshTokenValue,
+    refresh_token: refreshToken,
   });
 
   try {
     const response = await axios.post('https://accounts.spotify.com/api/token', body, authOptions);
-    return response.data.access_token; // Return the new access token
+    return response.data.access_token;
   } catch (error) {
     console.error('Error refreshing access token', error);
     throw error;
