@@ -1,3 +1,4 @@
+// components/SearchResults.js 
 import React, { useState } from 'react';
 import Track from './Track';
 import { List, Typography } from '@mui/material';
