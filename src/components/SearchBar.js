@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { TextField, Button, Box, Grid } from '@mui/material';
+import React, { useEffect, useState, useCallback } from 'react';
+import { TextField, Button, Grid } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
@@ -8,7 +8,7 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
   const [query, setQuery] = useState('');
 
   // Function to handle the search
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!accessToken || !query.trim()) { // Ensure there's a valid query
       setSearchResults([]); // Clear results if no valid query
       return;
@@ -22,7 +22,7 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
         params: {
           q: query,
           type: 'track',
-          limit: 40, // limit the number of results returned
+          limit: 40, // Limit the number of results returned
         },
       });
 
@@ -31,13 +31,13 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
       console.error('Error searching tracks:', error);
       setSearchResults([]); // Clear results on error
     }
-  };
+  }, [accessToken, query, setSearchResults]);
 
   // Handle Enter key press
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       event.preventDefault(); // Prevent the default form submit
-      handleSearch(); // Call the search function directly with button
+      handleSearch(); // Call the search function directly
     }
   };
 
@@ -45,14 +45,14 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (query.trim()) {
-        handleSearch(); // livesearch function
+        handleSearch(); // Live search function
       } else {
         setSearchResults([]); // Clear results when input is empty
       }
-    }, 300); // Delay in milliseconds so we can have livesearch but not too many api calls
+    }, 300); // Delay in milliseconds for live search
 
     return () => clearTimeout(delayDebounceFn); // Cleanup when there is no input
-  }, [query, accessToken, setSearchResults]);
+  }, [query, handleSearch, setSearchResults]); // Added handleSearch to the dependency array
 
   return (
     <Grid container justifyContent="center" alignItems="center" direction="column">
@@ -61,21 +61,21 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
           label="Search Spotify"
           variant="filled"
           value={query}
-          onChange={(e) => setQuery(e.target.value)} // Livesearch
-          onKeyDown={handleKeyDown}  // so we can hit the enter as well instead of just button click
+          onChange={(e) => setQuery(e.target.value)} // Live search
+          onKeyDown={handleKeyDown} // Handle Enter key
           sx={{
             marginBottom: 2, // Spacing below the text field
             width: '100%', // Adjust this to control the width of the TextField
             maxWidth: '400px', // Max width for the TextField
             padding: { xs: '8px', sm: '16px' },
             '& .MuiInputBase-input': {
-            fontWeight: '800', // Input text
-      },
+              fontWeight: '800', // Input text
+            },
           }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon/>
+                <SearchIcon />
               </InputAdornment>
             ),
             autoComplete: 'off',
@@ -93,7 +93,7 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
           }}
         >
           Search
-        </Button> {/* search for song on button clicking */}
+        </Button> {/* Search for song on button clicking */}
       </Grid>
     </Grid>
   );
