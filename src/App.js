@@ -17,7 +17,7 @@ const App = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [playlist, setPlaylist] = useState([]);
   const [accessToken, setAccessToken] = useState('');
-  const [refreshTokenValue, setRefreshTokenValue] = useState(''); // Renamed to avoid confusion
+  const [refreshTokenValue, setRefreshTokenValue] = useState('');
 
   const navigate = useNavigate();
 
@@ -28,18 +28,18 @@ const App = () => {
 
   // Function to log out
   const handleLogout = () => {
-    setAccessToken(''); // Clear the access token
+    setAccessToken('');
     localStorage.removeItem('spotifyAccessToken');
     localStorage.removeItem('spotifyRefreshToken');
-    setSearchResults([]); // Clear search results
-    setPlaylist([]); // Clear the playlist
+    setSearchResults([]);
+    setPlaylist([]);
     navigate('/');
   };
 
   // Function to refresh access token using refresh token
   const refreshAccessToken = async () => {
     try {
-      const newAccessToken = await refreshToken(refreshTokenValue); // Use the refreshTokenValue from state
+      const newAccessToken = await refreshToken(refreshTokenValue);
       setAccessToken(newAccessToken);
       localStorage.setItem('spotifyAccessToken', newAccessToken);
     } catch (error) {
@@ -125,12 +125,10 @@ const App = () => {
     }
 
     if (storedRefreshToken) {
-      setRefreshTokenValue(storedRefreshToken); // Update to use the renamed state
+      setRefreshTokenValue(storedRefreshToken);
     }
 
-    if (!storedAccessToken && !window.location.pathname.includes('callback')) {
-      handleLogin();
-    }
+    // Removed automatic login trigger
   }, []);
 
   return (
@@ -321,7 +319,7 @@ const AuthCallback = ({ setAccessToken, setRefreshToken }) => {
       getAccessToken(code)
         .then((data) => {
           setAccessToken(data.access_token);
-          setRefreshToken(data.refresh_token); // Set the refresh token here
+          setRefreshToken(data.refresh_token);
           localStorage.setItem('spotifyAccessToken', data.access_token);
           localStorage.setItem('spotifyRefreshToken', data.refresh_token);
           navigate('/');
