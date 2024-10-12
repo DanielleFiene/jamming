@@ -11,6 +11,7 @@ import axios from 'axios';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme, GlobalScrollbarStyles } from './styles/StyleOverrides.js';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import OtherPlaylists from './components/OtherPlaylists';
 import './styles/style.css';
 
 const App = () => {
@@ -133,6 +134,13 @@ const App = () => {
     }
   }, []);
 
+  // setting state for Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  //function top open and close Modal
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
   return (
     <ThemeProvider theme={theme}>
       <GlobalScrollbarStyles />
@@ -164,6 +172,7 @@ const App = () => {
             element={<AuthCallback setAccessToken={setAccessToken} setRefreshToken={setRefreshToken} />}
           />
         </Routes>
+        <OtherPlaylists isOpen={isModalOpen} onClose={closeModal} />
       </Box>
     </ThemeProvider>
   );
@@ -178,6 +187,7 @@ const Home = ({
   setPlaylist,
   handleSavePlaylist,
   handleLogout,
+  openModal,
 }) => {
   return (
     <Container
@@ -291,17 +301,21 @@ const Home = ({
 
         {accessToken && (
           <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginTop: '10px',
-              marginBottom: '10px',
-            }}
-          >
-            <Button variant="outlined" onClick={handleLogout} sx={{padding: { xs: '8px', sm: '16px' },}}>
-              Logout
-            </Button>
-          </Box>
+          sx={{
+            display: 'flex',
+            flexDirection: 'column', // Align buttons vertically
+            alignItems: 'center',
+            marginTop: '10px',
+            marginBottom: '10px',
+          }}
+        >
+          <Button variant="outlined" onClick={openModal} sx={{padding: { xs: '8px', sm: '16px' }, marginBottom: '10px'}}>
+            Show Other Playlists
+          </Button>
+          <Button variant="outlined" onClick={handleLogout} sx={{padding: { xs: '8px', sm: '16px' },}}>
+            Logout
+          </Button>
+        </Box>
         )}
       </Grid>
     </Container>
