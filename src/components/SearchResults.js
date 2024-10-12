@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Track from './Track';
 import { List, Typography } from '@mui/material';
-import { CenterFocusStrong } from '@mui/icons-material';
 
 const SearchResults = ({ searchResults, playlist, setPlaylist, player }) => {
   const [currentTrack, setCurrentTrack] = useState(null); // State to keep track of the currently playing track
