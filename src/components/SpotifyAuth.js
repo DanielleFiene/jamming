@@ -3,7 +3,7 @@ import axios from 'axios';
 // Spotify credentials
 const clientId = '400874ab2dc449858480863ad522609f';
 const clientSecret = 'c82905546d364f6ea992749fda02f2fb';
-const redirectUri = 'http://localhost:3000/callback';  // Must match your Spotify app's redirect URI
+const redirectUri = 'https://jamspace-tan.vercel.app/callback';
 
 // Step 1: Redirect user to Spotify login
 export const loginWithSpotify = () => {
