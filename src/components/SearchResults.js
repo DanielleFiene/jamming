@@ -1,10 +1,11 @@
 // components/SearchResults.js 
-import React from 'react';
+import React, { useState } from 'react';
 import Track from './Track';
 import { List, Typography } from '@mui/material';
 
 const SearchResults = ({ searchResults, playlist, setPlaylist, player }) => {
-  
+  const [currentTrack, setCurrentTrack] = useState(null); // State to keep track of the currently playing track
+
   const addTrackToPlaylist = (track) => {
     if (!playlist.some(t => t.id === track.id)) {
       setPlaylist([...playlist, track]);
@@ -17,7 +18,7 @@ const SearchResults = ({ searchResults, playlist, setPlaylist, player }) => {
       if (trackUri) {
         try {
           await player._send('player/play', { uris: [trackUri] }); // Send play command
-          // You can also log or do something else with the current track here if needed.
+          setCurrentTrack(track); // Update the current track state
         } catch (error) {
           console.error('Error playing track:', error);
         }

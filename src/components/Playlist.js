@@ -1,15 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import Tracklist from './Tracklist'; 
 import { Button, List, Box, Typography, TextField, Tooltip, Snackbar } from '@mui/material'; // Added Snackbar import
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
-import { getUserProfile } from './SpotifyAuth'; // Import only the necessary function
+import { createPlaylist, getUserProfile } from './SpotifyAuth'; // Import your functions
 import axios from 'axios'; // Ensure axios is imported for API calls
 
 const Playlist = ({ playlist, setPlaylist, accessToken }) => {
   const [player, setPlayer] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(null);
   const [playlistName, setPlaylistName] = useState('Your Playlist');
   const [isEditing, setIsEditing] = useState(false);
@@ -19,7 +20,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false); // For Snackbar visibility
 
   // Function to initialize the Spotify Player
-  const initPlayer = useCallback(() => {
+  const initPlayer = () => {
     const player = new window.Spotify.Player({
       name: 'Web Player',
       getOAuthToken: cb => { cb(accessToken); },
@@ -37,7 +38,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
     });
 
     setPlayer(player);
-  }, [accessToken]);
+  };
 
   useEffect(() => {
     window.onSpotifyWebPlaybackSDKReady = () => {
@@ -58,7 +59,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
         player.disconnect();
       }
     };
-  }, [initPlayer, player]); // Include initPlayer in the dependency array
+  }, [accessToken]);
 
   const playTrack = async (index) => {
     if (player && playlist[index]) {
@@ -72,6 +73,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
       try {
         await player._send("player/play", { uris: [trackUri] });
         setCurrentTrackIndex(index);
+        setIsPlaying(true);
       } catch (error) {
         console.error('Error playing track:', error);
       }
@@ -86,6 +88,8 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
       player.addListener('ended', () => {
         if (currentTrackIndex < playlist.length - 1) {
           playTrack(currentTrackIndex + 1);
+        } else {
+          setIsPlaying(false);
         }
       });
     }
@@ -303,22 +307,48 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
             variant="contained" 
             color="primary" 
             onClick={nextTrack} 
-            disabled={isDisabled || currentTrackIndex === playlist.length - 1}
+            disabled={isDisabled || currentTrackIndex >= playlist.length - 1}
             sx={{ marginX: '5px', padding: { xs: '5px', sm: '16px' }, }}
           >
-            <SkipNextIcon /> 
+            <SkipNextIcon />
           </Button>
         </Tooltip>
       </Box>
-      
-      <Button 
-        variant="contained" 
-        color="secondary" 
-        onClick={handleSavePlaylist} 
-        sx={{ marginTop: '15px' }}
-      >
-        Save Playlist
-      </Button>
+
+      {/* Save Playlist Button */}
+      <Box sx={{ marginTop: '20px' }}>
+        <Button 
+          variant="contained" 
+          color="secondary" 
+          onClick={handleSavePlaylist}
+          disabled={playlist.length === 0} sx={{padding: { xs: '5px', sm: '16px' },}}
+        >
+          Save Playlist to Spotify
+        </Button>
+      </Box>
+
+      {/* Conditional rendering for Clear Playlist button */}
+      {playlist.length > 0 && (
+        <Tooltip title="Clear Playlist">
+          <Button 
+            variant="outlined" 
+            color="primary" 
+            onClick={() => setPlaylist([])} 
+            sx={{ 
+              marginTop: '20px',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.8)',
+              padding: { xs: '5px', sm: '16px' },
+              transition: 'ease-in, 0.3s',
+              '&:hover': {
+                scale: '1.05',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+              },
+            }}
+          >
+            Clear Playlist
+          </Button>
+        </Tooltip>
+      )}
 
       {/* Snackbar for success message */}
       <Snackbar 

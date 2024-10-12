@@ -17,7 +17,7 @@ const App = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [playlist, setPlaylist] = useState([]);
   const [accessToken, setAccessToken] = useState('');
-  const [refreshTokenValue, setRefreshTokenValue] = useState(''); // Renamed to avoid confusion
+  const [refreshToken, setRefreshToken] = useState('');
 
   const navigate = useNavigate();
 
@@ -39,7 +39,7 @@ const App = () => {
   // Function to refresh access token using refresh token
   const refreshAccessToken = async () => {
     try {
-      const newAccessToken = await refreshToken(refreshTokenValue); // Use the refreshTokenValue from state
+      const newAccessToken = await refreshToken(refreshToken);
       setAccessToken(newAccessToken);
       localStorage.setItem('spotifyAccessToken', newAccessToken);
     } catch (error) {
@@ -125,7 +125,7 @@ const App = () => {
     }
 
     if (storedRefreshToken) {
-      setRefreshTokenValue(storedRefreshToken); // Update to use the renamed state
+      setRefreshToken(storedRefreshToken);
     }
 
     if (!storedAccessToken && !window.location.pathname.includes('callback')) {
@@ -161,7 +161,7 @@ const App = () => {
           />
           <Route
             path="/callback"
-            element={<AuthCallback setAccessToken={setAccessToken} setRefreshToken={setRefreshTokenValue} />}
+            element={<AuthCallback setAccessToken={setAccessToken} setRefreshToken={setRefreshToken} />}
           />
         </Routes>
       </Box>
@@ -187,59 +187,58 @@ const Home = ({
         marginTop: '1%',
         paddingTop: '2%',
         maxHeight: '100%',
+        borderRadius: '15%',
         height: {
-          xs: '90vh',
-          sm: '90vh',
+          xs: '90vh',   
+          sm: '90vh',   
           md: '90vh',
           lg: '85vh',
           xl: '85vh',
         },
         width: {
-          xs: '90%',
-          sm: '90%',
-          md: '90%',
+          xs: '90%',   
+          sm: '90%',   
+          md: '90%', 
         },
         borderRadius: {
           xs: '8px',
           sm: '40px',
           md: '15%',
-          lg: '15%',
-          xl: '15%',
         },
       }}
     >
       <Grid
-        container
-        spacing={{
-          xs: 1,
-          sm: 2,
-          md: 3,
-        }}
-        sx={{
-          height: {
-            xs: '80vh',
-            sm: '75vh',
-            md: '85vh',
-          },
-          width: {
-            xs: '100%',
-            sm: '100%',
-            md: '100%',
-          },
-          marginTop: {
-            xs: '50px',
-            sm: '20px',
-            md: '20px',
-            lg: '20px',
-            xl: '-60px',
-          },
-          justifyContent: {
-            xs: 'flex-start',
-            sm: 'center',
-          },
-          alignItems: 'flex-start',
-        }}
-      >
+  container
+  spacing={{
+    xs: 1, 
+    sm: 2,  
+    md: 3, 
+  }}
+  sx={{
+    height: {
+      xs: '80vh',  
+      sm: '75vh',   
+      md: '85vh',  
+    },
+    width: {
+      xs: '100%', 
+      sm: '100%',  
+      md: '100%',  
+    },
+    marginTop: {
+      xs: '50px',  
+      sm: '20px',  
+      md: '20px',
+      lg: '20px',
+      xl: '-60px',
+    },
+    justifyContent: {
+      xs: 'flex-start', 
+      sm: 'center',    
+    },
+    alignItems: 'flex-start',
+  }}
+>
 
         {!accessToken ? (
           <Grid item xs={12} sm={6}>
@@ -299,8 +298,8 @@ const Home = ({
               marginBottom: '10px',
             }}
           >
-            <Button variant="outlined" onClick={handleSavePlaylist}>
-              Save Playlist to Spotify
+            <Button variant="outlined" onClick={handleLogout} sx={{padding: { xs: '8px', sm: '16px' },}}>
+              Logout
             </Button>
           </Box>
         )}
@@ -321,7 +320,7 @@ const AuthCallback = ({ setAccessToken, setRefreshToken }) => {
       getAccessToken(code)
         .then((data) => {
           setAccessToken(data.access_token);
-          setRefreshToken(data.refresh_token); // Set the refresh token here
+          setRefreshToken(data.refresh_token);
           localStorage.setItem('spotifyAccessToken', data.access_token);
           localStorage.setItem('spotifyRefreshToken', data.refresh_token);
           navigate('/');
