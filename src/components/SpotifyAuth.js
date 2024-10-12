@@ -4,7 +4,7 @@ import axios from 'axios';
 // Spotify credentials
 const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.REACT_APP_SPOTIFY_CLIENT_SECRET;
-const redirectUri = process.env.REACT_APP_SPOTIFY_REDIRECT_URI || 'http://localhost:3000/callback';
+const redirectUri = process.env.REACT_APP_SPOTIFY_REDIRECT_URI;
 
 // Step 1: Redirect user to Spotify login
 export const loginWithSpotify = () => {
