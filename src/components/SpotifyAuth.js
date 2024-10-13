@@ -12,6 +12,9 @@ export const loginWithSpotify = () => {
     'playlist-modify-private',
     'user-read-private',
     'playlist-read-private',
+    'user-read-playback-state',  // New scope for playback state
+    'user-modify-playback-state', // New scope for modifying playback
+    'streaming',                  // New scope for streaming control
   ];
 
   // Wrap the URL in backticks for template literals
