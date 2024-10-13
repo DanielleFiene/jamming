@@ -1,70 +1,108 @@
-# Getting Started with Create React App
+# Jamming/Jamspace
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+JamSpace is a responsive web application that allows users to search for songs, play them, create custom playlists, and save them directly to their Spotify accounts. Users can also access their existing playlists and play tracks from them, providing a seamless music experience.
 
-## Available Scripts
+**Note**: Due to Spotify's API permission requirements, users must request special access to play songs and retrieve playlists. Currently, only the application owner has whitelisted access.
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- **Search for Songs**: Users can easily search for their favorite tracks using the Spotify API.
+- **Play Songs**: Play any song directly from the search results or from saved playlists (requires special permissions).
+- **Create Playlists**: Users can add tracks to a new playlist and customize the playlist name.
+- **Save to Spotify**: Save the newly created playlists to your Spotify account.
+- **Access Existing Playlists**: Retrieve and play existing playlists from the user's Spotify account (requires special permissions).
+- **Responsive Design**: The application is designed to work seamlessly across various devices, providing a great user experience on both desktop and mobile.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Technologies Used
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **React**: For building the user interface.
+- **Material-UI**: For styling and responsive design components.
+- **Spotify API**: To fetch song data and manage user playlists.
+- **Axios**: For making HTTP requests to the Spotify API.
 
-### `npm test`
+## Live Demo
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+You can try out JamSpace live at [https://jamspace-tan.vercel.app/](https://jamspace-tan.vercel.app/).
+Live demo on Youtube: https://youtu.be/cgD3E7yh4Lw
+Some pictures:
+![log in page](https://github.com/user-attachments/assets/52ebe1c5-4ecf-4c7a-b667-2981df19a5dc)
+![create a playlist](https://github.com/user-attachments/assets/6d4ae601-c4c8-4f4d-8d63-a66046eacf27)
+![retrieve playlists from spotify](https://github.com/user-attachments/assets/90c308a2-4371-402d-92af-24bff52b4c78)
 
-### `npm run build`
+## Getting Started
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+To run this project locally, follow these steps:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/jamspace.git
+   cd jamspace
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-### `npm run eject`
+3. **Create a Spotify Developer Account**:
+   - Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/applications).
+   - Create a new application to get your `clientId` and `clientSecret`.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+4. **Set up Environment Variables**:
+   Create a `.env` file in the root of the project and add your Spotify credentials:
+   ```bash
+   REACT_APP_SPOTIFY_CLIENT_ID=your_client_id
+   REACT_APP_SPOTIFY_CLIENT_SECRET=your_client_secret
+   REACT_APP_REDIRECT_URI=https://your_redirect_uri
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+5. **Start the Application**:
+   ```bash
+   npm start
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+6. **Open the application** in your web browser:
+   Navigate to `http://localhost:3000`.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Usage
 
-## Learn More
+- After starting the application, log in using your Spotify account to allow the app to access your playlists and manage them.
+- Use the search feature to find and play songs (note: special permissions are required to play songs).
+- Create new playlists by adding tracks from the search results.
+- Rename your playlists and save them directly to your Spotify account.
+- Access your existing playlists and play tracks from them (note: special permissions are required).
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Permissions
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Due to Spotify's API limitations, users need special permission to play songs and retrieve playlists. Currently, only the application owner has the necessary access. 
 
-### Code Splitting
+If you would like to request access or have any questions, please reach out.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Contributing
 
-### Analyzing the Bundle Size
+Contributions are welcome! If you would like to contribute to this project, please fork the repository and create a pull request. 
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+1. **Fork the repository**
+2. **Create your feature branch**
+   ```bash
+   git checkout -b feature/YourFeature
+   ```
+3. **Commit your changes**
+   ```bash
+   git commit -m 'Add some feature'
+   ```
+4. **Push to the branch**
+   ```bash
+   git push origin feature/YourFeature
+   ```
+5. **Open a pull request**
 
-### Making a Progressive Web App
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### Advanced Configuration
+## Acknowledgments
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- [Spotify API Documentation](https://developer.spotify.com/documentation/web-api/)
+- [Material-UI Documentation](https://mui.com/)
+- Special thanks to all contributors and the open-source community!
