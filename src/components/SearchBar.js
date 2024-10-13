@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Box, Grid } from '@mui/material';
+import { TextField, Button, Box, Grid, Tooltip } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
@@ -69,13 +69,15 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
             maxWidth: '400px', // Max width for the TextField
             padding: { xs: '8px', sm: '16px' },
             '& .MuiInputBase-input': {
-            fontWeight: '800', // Input text
-      },
+              fontWeight: '800', // Input text
+            },
           }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon/>
+                <Tooltip title="Search for tracks">
+                  <SearchIcon />
+                </Tooltip>
               </InputAdornment>
             ),
             autoComplete: 'off',
@@ -83,17 +85,20 @@ const SearchBar = ({ setSearchResults, accessToken }) => {
         />
       </Grid>
       <Grid item>
-        <Button 
-          variant="outlined" 
-          onClick={handleSearch}
-          sx={{ 
-            width: '100%',
-            maxWidth: '400px',
-            padding: { xs: '8px', sm: '16px' },
-          }}
-        >
-          Search
-        </Button> {/* search for song on button clicking */}
+        <Tooltip title="Click to search for tracks">
+          <Button 
+            variant="outlined" 
+            onClick={handleSearch}
+            sx={{ 
+              width: '100%',
+              maxWidth: '400px',
+              padding: { xs: '8px', sm: '16px' },
+              marginTop: '-10px',
+            }}
+          >
+            Search
+          </Button>
+        </Tooltip> {/* search for song on button clicking */}
       </Grid>
     </Grid>
   );

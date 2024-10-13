@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ListItem, ListItemAvatar, Avatar, ListItemText, IconButton, Grid, Typography } from '@mui/material';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import { ListItem, ListItemAvatar, Avatar, ListItemText, IconButton, Grid, Typography, Tooltip } from '@mui/material';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'; // Solid remove icon
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 
@@ -20,13 +20,16 @@ const Tracklist = ({ tracks, onRemove, onTrackClick }) => {
     <>
       {tracks.map((track) => {
         const albumImage = track.album.images[0]?.url; // Get the album image for each track
-        
+        const isPlaying = playingTrack && playingTrack.id === track.id; // Determine if this track is currently playing
+
         return (
           <ListItem 
             key={track.id} 
             button 
             onClick={() => handlePlayPause(track)} // Call play/pause on click
             sx={{
+              backgroundColor: isPlaying ? 'rgba(0, 150, 0, 0.2)' : 'transparent', // Highlight if playing
+              borderLeft: isPlaying ? '4px solid #00ff00' : 'none', // Add a green border for the current track
               transition: 'background-color 0.3s, transform 0.3s',
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -42,7 +45,7 @@ const Tracklist = ({ tracks, onRemove, onTrackClick }) => {
                 <Avatar 
                   src={albumImage} 
                   alt={track.album.name} 
-                  sx={{ width: { xs: 40, sm: 56 }, height: { xs: 40, sm: 56 }, marginLeft: {xs: '-10px'} }} // Responsive avatar size
+                  sx={{ width: { xs: 40, sm: 56 }, height: { xs: 40, sm: 56 }, marginLeft: { xs: '-10px' } }} // Responsive avatar size
                 />
               )}
             </ListItemAvatar>
@@ -75,27 +78,31 @@ const Tracklist = ({ tracks, onRemove, onTrackClick }) => {
               <Grid item>
                 <Grid container direction="row" spacing={1} alignItems="center">
                   <Grid item>
-                    <IconButton 
-                      color="secondary" 
-                      onClick={(e) => { e.stopPropagation(); onRemove(track); }} // Prevent ListItem click when removing
-                      aria-label="remove track"
-                      sx={{ padding: { xs: '5px', sm: '8px' } }} 
-                    >
-                      <RemoveCircleOutlineIcon />
-                    </IconButton>
+                    <Tooltip title="Remove track">
+                      <IconButton 
+                        color="secondary" 
+                        onClick={(e) => { e.stopPropagation(); onRemove(track); }} // Prevent ListItem click when removing
+                        aria-label="remove track"
+                        sx={{ padding: { xs: '5px', sm: '8px' } }} 
+                      >
+                        <RemoveCircleIcon /> {/* Solid remove icon */}
+                      </IconButton>
+                    </Tooltip>
                   </Grid>
                   <Grid item>
-                    <IconButton 
-                      color="primary" 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        handlePlayPause(track); 
-                      }} 
-                      aria-label={playingTrack && playingTrack.id === track.id ? "pause track" : "play track"}
-                      sx={{ padding: { xs: '5px', sm: '8px' } }}
-                    >
-                      {playingTrack && playingTrack.id === track.id ? <PauseIcon /> : <PlayArrowIcon />}
-                    </IconButton>
+                    <Tooltip title={isPlaying ? "Pause track" : "Play track"}>
+                      <IconButton 
+                        color="primary" 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          handlePlayPause(track); 
+                        }} 
+                        aria-label={isPlaying ? "pause track" : "play track"}
+                        sx={{ padding: { xs: '5px', sm: '8px' } }}
+                      >
+                        {isPlaying ? <PauseIcon /> : <PlayArrowIcon />} {/* Icon changes based on isPlaying */}
+                      </IconButton>
+                    </Tooltip>
                   </Grid>
                 </Grid>
               </Grid>

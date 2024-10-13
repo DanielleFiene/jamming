@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Tracklist from './Tracklist'; 
-import { Button, List, Box, Typography, TextField, Tooltip, Snackbar } from '@mui/material'; // Added Snackbar import
+import { Button, List, Box, Typography, TextField, Tooltip, Snackbar } from '@mui/material'; 
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
-import { createPlaylist, getUserProfile } from './SpotifyAuth'; // Import your functions
-import axios from 'axios'; // Ensure axios is imported for API calls
+import { getUserProfile } from './SpotifyAuth'; 
+import axios from 'axios'; 
 
 const Playlist = ({ playlist, setPlaylist, accessToken }) => {
   const [player, setPlayer] = useState(null);
@@ -14,10 +14,11 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(null);
   const [playlistName, setPlaylistName] = useState('Your Playlist');
   const [isEditing, setIsEditing] = useState(false);
+  const [playingTrack, setPlayingTrack] = useState(null); // Track currently being played
   
   // New state variables for Snackbar
-  const [successMessage, setSuccessMessage] = useState(''); // For the success message
-  const [snackbarOpen, setSnackbarOpen] = useState(false); // For Snackbar visibility
+  const [successMessage, setSuccessMessage] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   // Function to initialize the Spotify Player
   const initPlayer = () => {
@@ -73,12 +74,24 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
       try {
         await player._send("player/play", { uris: [trackUri] });
         setCurrentTrackIndex(index);
+        setPlayingTrack(playlist[index]); // Set the currently playing track
         setIsPlaying(true);
       } catch (error) {
         console.error('Error playing track:', error);
       }
     } else {
       console.error('Player not initialized or no track found at index:', index);
+    }
+  };
+
+  const handleTrackClick = (track) => {
+    if (playingTrack && playingTrack.id === track.id) {
+      // If the same track is clicked, pause it
+      setPlayingTrack(null); // Reset currently playing track
+      player._send('player/pause'); // Pause the track
+      setIsPlaying(false); // Update isPlaying state
+    } else {
+      playTrack(playlist.findIndex(t => t.id === track.id)); // Play new track
     }
   };
 
@@ -111,10 +124,6 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
     if (currentTrackIndex > 0) {
       playTrack(currentTrackIndex - 1);
     }
-  };
-
-  const handleTrackClick = (index) => {
-    playTrack(index);
   };
 
   const handleNameChange = (event) => {
@@ -264,6 +273,7 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
           tracks={playlist} 
           onRemove={(track) => setPlaylist(playlist.filter(t => t.id !== track.id))} 
           onTrackClick={handleTrackClick} 
+          playingTrack={playingTrack} // Pass the currently playing track to Tracklist
         />
       </List>
       
@@ -291,71 +301,47 @@ const Playlist = ({ playlist, setPlaylist, accessToken }) => {
             <ShuffleIcon />
           </Button>
         </Tooltip>
-        <Tooltip title="Play Previous Track">
+        <Tooltip title="Previous Track">
           <Button 
             variant="contained" 
             color="primary" 
-            onClick={previousTrack} 
-            disabled={isDisabled || currentTrackIndex === 0}
-            sx={{ marginX: '5px',padding: { xs: '5px', sm: '16px' }, }}
+            onClick={previousTrack}
+            disabled={isDisabled || currentTrackIndex === 0} // Disable if it's the first track or empty list
+            sx={{ marginX: '5px', padding: { xs: '5px', sm: '16px' }, }}
           >
-            <SkipPreviousIcon /> 
+            <SkipPreviousIcon />
           </Button>
         </Tooltip>
-        <Tooltip title="Play Next Track">
+        <Tooltip title="Next Track">
           <Button 
             variant="contained" 
             color="primary" 
-            onClick={nextTrack} 
-            disabled={isDisabled || currentTrackIndex >= playlist.length - 1}
+            onClick={nextTrack}
+            disabled={isDisabled || currentTrackIndex === playlist.length - 1} // Disable if it's the last track
             sx={{ marginX: '5px', padding: { xs: '5px', sm: '16px' }, }}
           >
             <SkipNextIcon />
           </Button>
         </Tooltip>
-      </Box>
-
-      {/* Save Playlist Button */}
-      <Box sx={{ marginTop: '20px' }}>
-        <Button 
-          variant="contained" 
-          color="secondary" 
-          onClick={handleSavePlaylist}
-          disabled={playlist.length === 0} sx={{padding: { xs: '5px', sm: '16px' },}}
-        >
-          Save Playlist to Spotify
-        </Button>
-      </Box>
-
-      {/* Conditional rendering for Clear Playlist button */}
-      {playlist.length > 0 && (
-        <Tooltip title="Clear Playlist">
+        <Tooltip title="Save Playlist">
           <Button 
-            variant="outlined" 
-            color="primary" 
-            onClick={() => setPlaylist([])} 
-            sx={{ 
-              marginTop: '20px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.8)',
-              padding: { xs: '5px', sm: '16px' },
-              transition: 'ease-in, 0.3s',
-              '&:hover': {
-                scale: '1.05',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
-              },
-            }}
+            variant="contained" 
+            color="secondary" 
+            onClick={handleSavePlaylist}
+            disabled={isDisabled}
+            sx={{ marginX: '5px', padding: { xs: '5px', sm: '16px' }, }}
           >
-            Clear Playlist
+            Save
           </Button>
         </Tooltip>
-      )}
-
+      </Box>
+      
       {/* Snackbar for success message */}
       <Snackbar 
         open={snackbarOpen} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose}
-        message={successMessage}
+        autoHideDuration={6000} 
+        onClose={handleSnackbarClose} 
+        message={successMessage} 
       />
     </Box>
   );

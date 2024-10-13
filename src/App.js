@@ -5,12 +5,13 @@ import SearchBar from './components/SearchBar';
 import SearchResults from './components/SearchResults';
 import Playlist from './components/Playlist';
 import Header from './components/Header';
-import { Container, Grid, Box, Button } from '@mui/material';
+import { Container, Grid, Box, Button, Tooltip } from '@mui/material';
 import { loginWithSpotify, getAccessToken, refreshToken } from './components/SpotifyAuth';
 import axios from 'axios';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme, GlobalScrollbarStyles } from './styles/StyleOverrides.js';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import PlaylistsModal from './components/PlaylistsModal';
 import './styles/style.css';
 
 const App = () => {
@@ -18,7 +19,9 @@ const App = () => {
   const [playlist, setPlaylist] = useState([]);
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
+  const [playingTrack, setPlayingTrack] = useState(null); // State for currently playing track
 
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
   const navigate = useNavigate();
 
   // Function to log in with Spotify
@@ -33,6 +36,7 @@ const App = () => {
     localStorage.removeItem('spotifyRefreshToken');
     setSearchResults([]); // Clear search results
     setPlaylist([]); // Clear the playlist
+    setPlayingTrack(null); // Reset currently playing track
     navigate('/');
   };
 
@@ -127,16 +131,51 @@ const App = () => {
     if (storedRefreshToken) {
       setRefreshToken(storedRefreshToken);
     }
-
-    if (!storedAccessToken && !window.location.pathname.includes('callback')) {
-      handleLogin();
-    }
   }, []);
 
-  // setting state for Modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Function to handle play/pause functionality
+  const handlePlayPause = (track) => {
+    if (playingTrack && playingTrack.id === track.id) {
+      setPlayingTrack(null); // Stop the current track
+    } else {
+      setPlayingTrack(track); // Set the clicked track as currently playing
+      // Logic to play the track goes here (optional)
+    }
+  };
 
-  //function top open and close Modal
+  // Function to handle playing a playlist
+  const handlePlayPlaylist = async (playlistId) => {
+    if (!accessToken) {
+      alert('You need to log in to play a playlist.');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `https://api.spotify.com/v1/playlists/${playlistId}/play`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Playing playlist:', response.data);
+    } catch (error) {
+      console.error('Error playing playlist:', error);
+      if (error.response && error.response.status === 401) {
+        // If the token expired, refresh it
+        await refreshAccessToken();
+        handlePlayPlaylist(playlistId); // Retry playing the playlist
+      } else {
+        alert('Failed to play the playlist.');
+      }
+    }
+  };
+
+  // Function to open modal
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
@@ -163,6 +202,9 @@ const App = () => {
                 setPlaylist={setPlaylist}
                 handleSavePlaylist={handleSavePlaylist}
                 handleLogout={handleLogout}
+                handlePlayPause={handlePlayPause} // Pass down play/pause function
+                playingTrack={playingTrack} // Pass down current track
+                openModal={openModal} // Pass down open modal function
               />
             }
           />
@@ -171,6 +213,13 @@ const App = () => {
             element={<AuthCallback setAccessToken={setAccessToken} setRefreshToken={setRefreshToken} />}
           />
         </Routes>
+        {/* Include the PlaylistsModal */}
+        <PlaylistsModal
+          open={isModalOpen}
+          handleClose={closeModal}
+          accessToken={accessToken}
+          handlePlayPlaylist={handlePlayPlaylist} // Pass the function as a prop
+        />
       </Box>
     </ThemeProvider>
   );
@@ -185,7 +234,9 @@ const Home = ({
   setPlaylist,
   handleSavePlaylist,
   handleLogout,
-  openModal,
+  handlePlayPause, // Accept play/pause function here
+  playingTrack, // Accept currently playing track here
+  openModal, // Accept openModal function here
 }) => {
   return (
     <Container
@@ -195,65 +246,68 @@ const Home = ({
         marginTop: '1%',
         paddingTop: '2%',
         maxHeight: '100%',
-        borderRadius: '15%',
         height: {
-          xs: '90vh',   
-          sm: '90vh',   
+          xs: '90vh',
+          sm: '90vh',
           md: '90vh',
           lg: '85vh',
           xl: '85vh',
         },
         width: {
-          xs: '90%',   
-          sm: '90%',   
-          md: '90%', 
+          xs: '90%',
+          sm: '90%',
+          md: '90%',
         },
         borderRadius: {
           xs: '8px',
           sm: '40px',
           md: '15%',
+          lg: '15%',
+          xl: '15%',
         },
       }}
     >
       <Grid
-  container
-  spacing={{
-    xs: 1, 
-    sm: 2,  
-    md: 3, 
-  }}
-  sx={{
-    height: {
-      xs: '80vh',  
-      sm: '75vh',   
-      md: '85vh',  
-    },
-    width: {
-      xs: '100%', 
-      sm: '100%',  
-      md: '100%',  
-    },
-    marginTop: {
-      xs: '50px',  
-      sm: '20px',  
-      md: '20px',
-      lg: '20px',
-      xl: '-60px',
-    },
-    justifyContent: {
-      xs: 'flex-start', 
-      sm: 'center',    
-    },
-    alignItems: 'flex-start',
-  }}
->
-
+        container
+        spacing={{
+          xs: 1,
+          sm: 2,
+          md: 3,
+        }}
+        sx={{
+          height: {
+            xs: '80vh',
+            sm: '75vh',
+            md: '85vh',
+            md: '70vh',
+          },
+          width: {
+            xs: '100%',
+            sm: '100%',
+            md: '100%',
+          },
+          marginTop: {
+            xs: '50px',
+            sm: '20px',
+            md: '20px',
+            lg: '-40px',
+            xl: '-60px',
+          },
+          justifyContent: {
+            xs: 'center',
+            sm: 'center',
+          },
+          alignItems: 'flex-start',
+        }}
+      >
         {!accessToken ? (
           <Grid item xs={12} sm={6}>
             <Box display="flex" flexDirection="column" alignItems="center" sx={{ marginTop: '20%' }}>
-              <Button variant="outlined" onClick={handleLogin}>
-                Log in with Spotify
-              </Button>
+            <Tooltip title='Click here to log in to your Spotify account'> 
+                <Button variant="outlined" onClick={handleLogin}>
+                  Log in with Spotify
+                </Button>
+              </Tooltip>
               <PlayCircleIcon
                 sx={{
                   fontSize: { xs: '10em', sm: '15em', md: '30em' },
@@ -279,7 +333,13 @@ const Home = ({
                 }}
               >
                 <SearchBar setSearchResults={setSearchResults} accessToken={accessToken} />
-                <SearchResults searchResults={searchResults} playlist={playlist} setPlaylist={setPlaylist} />
+                <SearchResults
+                  searchResults={searchResults}
+                  playlist={playlist}
+                  setPlaylist={setPlaylist}
+                  handlePlayPause={handlePlayPause}
+                  playingTrack={playingTrack}
+                />
               </Grid>
               <Grid
                 item
@@ -299,18 +359,24 @@ const Home = ({
 
         {accessToken && (
           <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column', // Align buttons vertically
-            alignItems: 'center',
-            marginTop: '10px',
-            marginBottom: '10px',
-          }}
-        >
-          <Button variant="outlined" onClick={handleLogout} sx={{padding: { xs: '8px', sm: '16px' },}}>
-            Logout
-          </Button>
-        </Box>
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: '10px',
+              marginBottom: '10px',
+            }}
+          ><Tooltip title="Click here to log out">
+              <Button variant="outlined" onClick={handleLogout} sx={{ padding: { xs: '8px', sm: '16px' } }}>
+                Logout
+              </Button>
+            </Tooltip>
+            <Tooltip title="Click here to see your Spotify playlists">
+              <Button variant="outlined" onClick={openModal} sx={{ padding: { xs: '8px', sm: '16px' }, marginLeft: '10px' }}>
+                View My Playlists
+              </Button>
+            </Tooltip>
+          </Box>
         )}
       </Grid>
     </Container>

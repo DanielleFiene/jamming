@@ -11,6 +11,7 @@ export const loginWithSpotify = () => {
     'playlist-modify-public',
     'playlist-modify-private',
     'user-read-private',
+    'playlist-read-private',
   ];
 
   // Wrap the URL in backticks for template literals
@@ -102,6 +103,21 @@ export const getUserProfile = async (accessToken) => {
     return response.data.id; // Return user ID
   } catch (error) {
     console.error('Error fetching user profile:', error);
+    throw error; // Handle error appropriately
+  }
+};
+
+// New Function: Get User's Playlists
+export const getUserPlaylists = async (accessToken) => {
+  try {
+    const response = await axios.get('https://api.spotify.com/v1/me/playlists', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data.items; // Return the array of playlists
+  } catch (error) {
+    console.error('Error fetching user playlists:', error);
     throw error; // Handle error appropriately
   }
 };
