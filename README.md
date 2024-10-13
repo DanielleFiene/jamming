@@ -23,8 +23,11 @@ JamSpace is a responsive web application that allows users to search for songs, 
 ## Live Demo
 
 You can try out JamSpace live at [https://jamspace-tan.vercel.app/](https://jamspace-tan.vercel.app/).
-Live demo on Youtube:
-https://youtu.be/cgD3E7yh4Lw
+Live demo on Youtube: https://youtu.be/cgD3E7yh4Lw
+Some pictures:
+![log in page](https://github.com/user-attachments/assets/52ebe1c5-4ecf-4c7a-b667-2981df19a5dc)
+![create a playlist](https://github.com/user-attachments/assets/6d4ae601-c4c8-4f4d-8d63-a66046eacf27)
+![retrieve playlists from spotify](https://github.com/user-attachments/assets/90c308a2-4371-402d-92af-24bff52b4c78)
 
 ## Getting Started
 
