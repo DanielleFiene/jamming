@@ -6,7 +6,7 @@ import SearchResults from './components/SearchResults';
 import Playlist from './components/Playlist';
 import Header from './components/Header';
 import { Container, Grid, Box, Button, Tooltip } from '@mui/material';
-import { loginWithSpotify, getAccessToken, refreshToken } from './components/SpotifyAuth';
+import { loginWithSpotify, getAccessToken } from './components/SpotifyAuth';
 import axios from 'axios';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme, GlobalScrollbarStyles } from './styles/StyleOverrides.js';
@@ -14,15 +14,20 @@ import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import PlaylistsModal from './components/PlaylistsModal';
 import './styles/style.css';
 
-const App = () => {
-  const [searchResults, setSearchResults] = useState([]);
-  const [playlist, setPlaylist] = useState([]);
-  const [accessToken, setAccessToken] = useState('');
-  const [refreshToken, setRefreshToken] = useState('');
-  const [playingTrack, setPlayingTrack] = useState(null); // State for currently playing track
+// not using refreshToken because i dont have a backend and dont want to increase risk
 
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
-  const navigate = useNavigate();
+const App = () => {
+  // State variables for managing application state
+  const [searchResults, setSearchResults] = useState([]); // Results from search queries
+  const [playlist, setPlaylist] = useState([]); // Current user's playlist
+  const [accessToken, setAccessToken] = useState(''); // User's Spotify access token
+  const [refreshToken, setRefreshToken] = useState(''); // User's Spotify refresh token
+  const [playingTrack, setPlayingTrack] = useState(null); // Currently playing track
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for managing modal visibility
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [deviceId, setDeviceId] = useState(null); // Device ID for Spotify SDK
+  const [player, setPlayer] = useState(null); // Spotify Web Player
+  const navigate = useNavigate(); // Hook for programmatic navigation
 
   // Function to log in with Spotify
   const handleLogin = () => {
@@ -32,29 +37,29 @@ const App = () => {
   // Function to log out
   const handleLogout = () => {
     setAccessToken(''); // Clear the access token
-    localStorage.removeItem('spotifyAccessToken');
-    localStorage.removeItem('spotifyRefreshToken');
+    localStorage.removeItem('spotifyAccessToken');//Remove token from local storage
+    localStorage.removeItem('spotifyRefreshToken');//remove refresh token from local storage
     setSearchResults([]); // Clear search results
     setPlaylist([]); // Clear the playlist
     setPlayingTrack(null); // Reset currently playing track
-    navigate('/');
+    navigate('/');//redirect to home again
   };
 
   // Function to refresh access token using refresh token
   const refreshAccessToken = async () => {
     try {
-      const newAccessToken = await refreshToken(refreshToken);
-      setAccessToken(newAccessToken);
-      localStorage.setItem('spotifyAccessToken', newAccessToken);
+      const newAccessToken = await refreshToken(refreshToken); // Attempt to refresh the access token 
+      setAccessToken(newAccessToken);  // Update state with new access token
+      localStorage.setItem('spotifyAccessToken', newAccessToken); // Save new token in local storage
     } catch (error) {
-      console.error('Error refreshing access token:', error);
-      handleLogout();
+      console.error('Error refreshing access token:', error); //log the error
+      handleLogout(); //if the refreshing token fails then log out again
     }
   };
 
   // Function to save the playlist to Spotify
   const saveToSpotify = async (playlistName, trackUris) => {
-    if (!accessToken) {
+    if (!accessToken) { //the check to see if a user is logged in
       alert('You need to log in to save playlists to Spotify.');
       return;
     }
@@ -66,18 +71,18 @@ const App = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      const userId = userIdResponse.data.id;
+      const userId = userIdResponse.data.id; //actually extracting the id of the user
 
       // Create playlist
       const createPlaylistResponse = await axios.post(
         `https://api.spotify.com/v1/users/${userId}/playlists`,
         {
-          name: playlistName,
-          public: false,
+          name: playlistName, //name of the Playlist
+          public: false, //this makes the playlist private
         },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`, //sending a token in the header
           },
         }
       );
@@ -86,37 +91,37 @@ const App = () => {
       await axios.post(
         `https://api.spotify.com/v1/playlists/${createPlaylistResponse.data.id}/tracks`,
         {
-          uris: trackUris,
+          uris: trackUris, //the URI's of the tracks to add, spotify docs on URI
         },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`, //send token in the header again
           },
         }
       );
 
-      alert('Playlist saved to Spotify successfully!');
+      alert('Playlist saved to Spotify successfully!'); //confirm if the playlist is saved succesfully
     } catch (error) {
-      console.error('Error saving playlist to Spotify:', error);
+      console.error('Error saving playlist to Spotify:', error); // log the error of not
       if (error.response && error.response.status === 401) {
         // If the token expired, refresh it
-        await refreshAccessToken();
+        await refreshAccessToken(); //try refreshing the token
         saveToSpotify(playlistName, trackUris); // Retry saving
       } else {
-        alert('Failed to save the playlist to Spotify.');
+        alert('Failed to save the playlist to Spotify.'); //different error message as above because of different error
       }
     }
   };
 
   // Function to handle saving playlist when user clicks the button
   const handleSavePlaylist = () => {
-    if (playlist.length === 0) {
-      alert('Add some tracks to your playlist first!');
+    if (playlist.length === 0) { //the check to see if the playlist is empty like equal to zero
+      alert('Add some tracks to your playlist first!'); //alert the user
       return;
     }
 
-    const trackUris = playlist.map((track) => track.uri);
-    saveToSpotify('My Custom Playlist', trackUris);
+    const trackUris = playlist.map((track) => track.uri); //extract the URI's from the playlist
+    saveToSpotify('My Custom Playlist', trackUris); //call the save function
   };
 
   // Function to retrieve token from localStorage and refresh if needed
@@ -124,56 +129,113 @@ const App = () => {
     const storedAccessToken = localStorage.getItem('spotifyAccessToken');
     const storedRefreshToken = localStorage.getItem('spotifyRefreshToken');
 
-    if (storedAccessToken) {
-      setAccessToken(storedAccessToken);
+    if (storedAccessToken) { //if there is a stored access token
+      setAccessToken(storedAccessToken); //then set the access token in state
     }
 
-    if (storedRefreshToken) {
-      setRefreshToken(storedRefreshToken);
+    if (storedRefreshToken) { //if there is a refresh access token
+      setRefreshToken(storedRefreshToken); //then set the refresh token in state
     }
   }, []);
 
-  // Function to handle play/pause functionality
-  const handlePlayPause = (track) => {
+  // Initialize Spotify Web Playback SDK
+  useEffect(() => {
+    if (accessToken) {
+      const script = document.createElement('script');
+      script.src = 'https://sdk.scdn.co/spotify-player.js';
+      script.async = true;
+      document.body.appendChild(script);
+
+      window.onSpotifyWebPlaybackSDKReady = () => {
+        const player = new window.Spotify.Player({
+          name: 'Web Playback SDK',
+          getOAuthToken: (cb) => { cb(accessToken); },
+          volume: 0.5
+        });
+
+        player.addListener('ready', ({ device_id }) => {
+          console.log('Ready with Device ID', device_id);
+          setDeviceId(device_id);
+        });
+
+        player.addListener('not_ready', ({ device_id }) => {
+          console.log('Device ID has gone offline', device_id);
+        });
+
+        player.addListener('player_state_changed', (state) => {
+          if (!state) {
+            return;
+          }
+
+          setPlayingTrack(state.track_window.current_track);
+          setIsPlaying(!state.paused);
+        });
+
+        player.connect();
+        setPlayer(player);
+      };
+    }
+  }, [accessToken]);
+
+  // Handle Play/Pause for a specific track
+  const handlePlayPause = async (track) => {
     if (playingTrack && playingTrack.id === track.id) {
-      setPlayingTrack(null); // Stop the current track
+      if (isPlaying) {
+        player.pause();
+      } else {
+        player.resume();
+      }
     } else {
-      setPlayingTrack(track); // Set the clicked track as currently playing
-      // Logic to play the track goes here (optional)
-    }
-  };
-
-  // Function to handle playing a playlist
-  const handlePlayPlaylist = async (playlistId) => {
-    if (!accessToken) {
-      alert('You need to log in to play a playlist.');
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        `https://api.spotify.com/v1/playlists/${playlistId}/play`,
-        {},
+      await axios.put(
+        `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+        {
+          uris: [track.uri]
+        },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
           },
         }
       );
-
-      console.log('Playing playlist:', response.data);
-    } catch (error) {
-      console.error('Error playing playlist:', error);
-      if (error.response && error.response.status === 401) {
-        // If the token expired, refresh it
-        await refreshAccessToken();
-        handlePlayPlaylist(playlistId); // Retry playing the playlist
-      } else {
-        alert('Failed to play the playlist.');
-      }
+      setPlayingTrack(track);
+      setIsPlaying(true);
     }
   };
+
+// Function to handle playing a playlist
+const handlePlayPlaylist = async (playlistId) => {
+  if (!accessToken) {
+    alert('You need to log in to play a playlist.');
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `https://api.spotify.com/v1/me/player/play`, // Use the correct endpoint for playback
+      {
+        context_uri: `spotify:playlist:${playlistId}`, // Specify the context_uri for the playlist
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('Playing playlist:', response.data);
+  } catch (error) {
+    console.error('Error playing playlist:', error);
+    if (error.response && error.response.status === 401) {
+      // If the token expired, refresh it
+      await refreshAccessToken();
+      handlePlayPlaylist(playlistId); // Retry playing the playlist
+    } else {
+      alert('Failed to play the playlist.');
+    }
+  }
+};
+
 
   // Function to open modal
   const openModal = () => setIsModalOpen(true);
@@ -188,37 +250,38 @@ const App = () => {
           background: 'linear-gradient(to right, #bbd2c5, #536976, #292e49)',
         }}
       >
-        <Header handleLogout={handleLogout} />
+        <Header />
         <Routes>
           <Route
             path="/"
             element={
               <Home
-                accessToken={accessToken}
-                handleLogin={handleLogin}
-                searchResults={searchResults}
-                setSearchResults={setSearchResults}
-                playlist={playlist}
-                setPlaylist={setPlaylist}
-                handleSavePlaylist={handleSavePlaylist}
-                handleLogout={handleLogout}
-                handlePlayPause={handlePlayPause} // Pass down play/pause function
-                playingTrack={playingTrack} // Pass down current track
-                openModal={openModal} // Pass down open modal function
+                accessToken={accessToken} // Passes the access token for authentication, allowing the child component to make API requests that require authorization.
+                handleLogin={handleLogin} // Passes the function to handle user login, enabling the child component to trigger the login process.
+                searchResults={searchResults} // Passes the current search results (e.g., songs, artists, etc.) to the child component for display or further processing.
+                setSearchResults={setSearchResults} // Passes the function to update the search results, allowing the child component to modify the state of search results.
+                playlist={playlist} // Passes the current playlist data (array of tracks) to the child component for display or manipulation.
+                setPlaylist={setPlaylist} // Passes the function to update the playlist state, enabling the child component to modify the playlist.
+                handleSavePlaylist={handleSavePlaylist} // Passes the save playlist function, allowing the child component to trigger the saving process for the current playlist.
+                handleLogout={handleLogout} // Pass down the logout function to allow the child component to log the user out.
+                handlePlayPause={handlePlayPause} // Pass down the function to toggle play/pause of the currently playing track.
+                playingTrack={playingTrack} // Pass down the current track that is currently playing, allowing the child component to display or control it.
+                openModal={openModal} // Pass down the function to open a modal dialog, enabling the child component to trigger modal display for additional information or actions.
               />
             }
           />
           <Route
             path="/callback"
+            // AuthCallback component handles the authentication callback from Spotify
             element={<AuthCallback setAccessToken={setAccessToken} setRefreshToken={setRefreshToken} />}
           />
         </Routes>
-        {/* Include the PlaylistsModal */}
+        {/* Include the PlaylistsModal to let users see their own spotify playlists */}
         <PlaylistsModal
-          open={isModalOpen}
-          handleClose={closeModal}
-          accessToken={accessToken}
-          handlePlayPlaylist={handlePlayPlaylist} // Pass the function as a prop
+          open={isModalOpen} // controls visibility of the modal/opens
+          handleClose={closeModal} //function to close the modal when the user is done
+          accessToken={accessToken} // pass the access token to allow the API calling related to playlists
+          handlePlayPlaylist={handlePlayPlaylist} // Pass the function as a prop to handle playing
         />
       </Box>
     </ThemeProvider>
@@ -226,14 +289,14 @@ const App = () => {
 };
 
 const Home = ({
-  accessToken,
-  handleLogin,
-  searchResults,
-  setSearchResults,
-  playlist,
-  setPlaylist,
-  handleSavePlaylist,
-  handleLogout,
+  accessToken, // Access token for making API requests to Spotify
+  handleLogin, // Function to trigger user login with Spotify
+  searchResults, // Current search results from the search bar
+  setSearchResults, // Function to update the search results state
+  playlist, // Current playlist created by the user
+  setPlaylist, // Function to update the playlist state
+  handleSavePlaylist, // Function to save the current playlist to Spotify
+  handleLogout, // Function to log the user out
   handlePlayPause, // Accept play/pause function here
   playingTrack, // Accept currently playing track here
   openModal, // Accept openModal function here
