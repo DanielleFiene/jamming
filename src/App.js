@@ -178,18 +178,28 @@ const App = () => {
   }, [accessToken]);
 
   // Handle Play/Pause for a specific track
-  const handlePlayPause = async (track) => {
+const handlePlayPause = async (track) => {
+  try {
     if (playingTrack && playingTrack.id === track.id) {
+      // If the same track is clicked, toggle play/pause
       if (isPlaying) {
-        player.pause();
+        await player.pause(); // Pause the player
+        setIsPlaying(false); // Update state to reflect paused status
       } else {
-        player.resume();
+        await player.resume(); // Resume playback
+        setIsPlaying(true); // Update state to reflect playing status
       }
     } else {
-      await axios.put(
+      if (!deviceId) {
+        console.error("Device ID is not available");
+        return; // Exit if no device ID
+      }
+
+      // Play the new track
+      const response = await axios.put(
         `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
         {
-          uris: [track.uri]
+          uris: [track.uri],
         },
         {
           headers: {
@@ -197,10 +207,20 @@ const App = () => {
           },
         }
       );
-      setPlayingTrack(track);
-      setIsPlaying(true);
+
+      if (response.status === 204) {
+        // Successfully started playback
+        setPlayingTrack(track); // Update state to the new playing track
+        setIsPlaying(true); // Update state to reflect playing status
+      } else {
+        console.error("Failed to start playback:", response.status);
+      }
     }
-  };
+  } catch (error) {
+    console.error("Error handling play/pause:", error);
+  }
+};
+
 
 // Function to handle playing a playlist
 const handlePlayPlaylist = async (playlistId) => {
